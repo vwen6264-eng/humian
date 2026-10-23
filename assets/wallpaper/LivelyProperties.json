@@ -1,0 +1,10 @@
+{
+  "lakeTime": {
+    "max": 100,
+    "min": 0,
+    "tick": 1,
+    "text": "昼夜氛围",
+    "type": "slider",
+    "value": 0
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "immersive-workbench",
+  "name": "湖面",
+  "version": "1.0.0",
+  "minAppVersion": "1.8.7",
+  "description": "沉浸式湖面动画工作台，集成日程备忘、技能库和 Wiki 知识库。",
+  "author": "Local",
+  "isDesktopOnly": true
+}

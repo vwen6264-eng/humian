@@ -1,0 +1,14 @@
+{
+  "AppVersion": "2.2.1.0",
+  "Title": "Chase the light · 视频湖面版",
+  "Thumbnail": null,
+  "Preview": null,
+  "Desc": "循环阳光水面视频，保留 WebGL 水波折射、鱼群、乌龟和昼夜调节。",
+  "Author": "Chase the light",
+  "License": null,
+  "Contact": null,
+  "Type": 1,
+  "FileName": "Chase-the-light-desktop-video.html",
+  "Arguments": null,
+  "IsAbsolutePath": false
+}
