@@ -1,0 +1,65 @@
+'use strict';
+const core=require('./taskboard-store.js');
+const KINDS={created:'创建',claimed:'领取',updated:'更新',progress:'进展',commented:'讨论',submitted:'提交验收',reviewed:'用户审核',moved:'状态调整',assigned:'重新分配',conversation_bound:'绑定对话',review_delivery:'意见交接',skill_read:'读取技能'};
+function sourceFor(task,entry){
+ if(entry.session==='obsidian-ui')return {label:'任务面板操作',conversation:null};
+ const explicit=entry.conversation_id||(/^conv-[\w-]+$/.test(entry.session||'')?entry.session:null);
+ const bound=task.claim?.agent===entry.actor&&task.claim?.session===entry.session?task.claim.conversation_id:null;
+ return {label:/workbuddy/i.test(entry.actor||'')?'WorkBuddy 执行记录':'Agent 执行记录',conversation:explicit||bound||null};
+}
+function time(at){const d=new Date(at);return Number.isNaN(d.valueOf())?String(at||'时间未记录'):d.toLocaleString('zh-CN',{hour12:false});}
+function contextText(task){return ['# '+task.title,'任务 ID：'+task.id,'任务笔记：[['+task.path+']]','当前版本：'+task.version,'状态：'+core.LABELS[task.status],'项目：'+(task.execution?.project_name||task.project_id),'工作目录：'+(task.execution?.work_dir||'未指定'),'\n## 任务上下文\n'+task.description,'\n## 验收条件\n'+task.acceptance.map(x=>'- '+x).join('\n'),'\n## 关联技能\n'+(task.skills||[]).map(s=>s.name+'：'+s.file).join('\n'),'\n## 当前结果\n'+(task.result||'尚未提交'),'\n## 交付物\n'+task.deliverables.join('\n'),'\n## 最新审核意见\n'+(task.review?.comment||'暂无'),'\n## 补充说明\n'+(task.notes||''),'\n## 完整执行记录\n'+task.history.map(e=>['### '+time(e.at)+' · '+e.actor+' · '+(KINDS[e.kind]||e.kind),'记录 ID：'+e.id,'执行会话：'+(e.session||'未记录'),'原对话：'+(sourceFor(task,e).conversation||'未绑定／不可定位'),e.message,e.result||'',e.deliverables?.length?'本次交付物：'+e.deliverables.join('；'):'',e.file?'技能文件：'+e.file:'',e.sha256?'技能指纹：'+e.sha256:'',e.before?'变更前：'+JSON.stringify(e.before):'',e.after?'变更后：'+JSON.stringify(e.after):''].filter(Boolean).join('\n')).join('\n\n')].join('\n');}
+async function render(env,task){
+ const {app,store,modal,element:el,button:btn,openNote,deliverable,skillPreview,taskForm,reviewForm,resumeAgent,USER}=env;
+ const current=await store.read(task.id),project=await store.record(current.project_id,'project'),m=modal(current.title);m.modalEl.classList.add('lake-task-record-dialog');
+ const root=el(m.contentEl,'div','lake-task-record'),bar=el(root,'div','lake-record-summary');
+ el(bar,'span','lake-record-status',core.LABELS[current.status]);el(bar,'span','',current.progress+'% · '+(current.assignee||'尚未分配'));el(bar,'span','',current.history.length+' 条记录');
+ const openConversation=async id=>{m.close();const result=await resumeAgent.focus(app,id);new env.api.Notice((result.alreadyActive?'已定位到当前原对话：':'已打开原对话：')+result.title+'。历史记录没有消息锚点，无法跳到具体消息。',7000);};
+ const copy=async text=>{await navigator.clipboard.writeText(text);new env.api.Notice('已复制');};
+ btn(bar,'复制完整上下文',()=>copy(contextText(current)));btn(bar,'打开任务笔记',()=>openNote(current.path));
+ const update=el(root,'div','lake-record-update');update.hidden=true;el(update,'span','','任务有新进展，当前阅读位置不会被打断。');btn(update,'读取最新记录',()=>{m.close();render(env,{id:current.id});});
+ const layout=el(root,'div','lake-record-layout'),main=el(layout,'main','lake-record-main'),aside=el(layout,'aside','lake-record-aside');
+ const section=(title,parent=main)=>{const node=el(parent,'section','lake-record-section');el(node,'h3','',title);return node;};
+ // Plain text plus explicit links: no task text is executed as HTML or code blocks.
+ function linked(parent,text){const re=/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]|https?:\/\/[^\s<>]+/g;let start=0,match;while((match=re.exec(String(text)))){parent.append(document.createTextNode(text.slice(start,match.index)));const a=el(parent,'a','internal-link',match[1]?match[2]||match[1]:match[0]);if(match[1]){a.href=match[1];a.onclick=e=>{e.preventDefault();openNote(match[1]);};}else{a.href=match[0];a.target='_blank';a.rel='noopener noreferrer';}start=re.lastIndex;}parent.append(document.createTextNode(String(text).slice(start)));}
+ function prose(parent,text){for(const paragraph of String(text||'暂无补充。').split(/\n\s*\n/)){const p=el(parent,'p','lake-record-prose');linked(p,paragraph);}}
+ const description=section('任务上下文');prose(description,current.description||'尚未补充任务说明。');
+ const acceptance=section('怎样才算完成'),list=el(acceptance,'ol','lake-record-acceptance');for(const condition of current.acceptance)el(list,'li','',condition);
+ if(current.review?.comment){const review=section(current.review.status==='changes_requested'?'用户要求继续修改':'用户审核意见');review.classList.add('lake-record-review');el(review,'small','',time(current.review.at));prose(review,current.review.comment);}
+ const result=section(current.result?'最近一次提交与交付物':'执行结果与交付物'),submitted=[...current.history].reverse().find(e=>e.kind==='submitted');if(submitted)el(result,'p','lake-record-help',time(submitted.at)+' · '+submitted.actor+(current.status==='done'?'':' · 提交不代表已通过用户验收'));prose(result,current.result||'Agent 尚未提交执行结果。');for(const link of current.deliverables)deliverable(result,link);
+ const notes=(current.notes||'').replace(/^## 自由笔记\s*/,'').trim();if(notes&&notes!=='此处可补充说明，接口更新会保留这部分内容。')prose(section('任务笔记中的补充说明'),notes);
+ const historySection=section('执行记录与讨论'),tools=el(historySection,'div','lake-record-history-tools'),search=el(tools,'input','lake-input');search.type='search';search.placeholder='搜索记录、操作者或会话…';search.setAttribute('aria-label','搜索执行记录');
+ const order=el(tools,'select','lake-select');order.setAttribute('aria-label','记录顺序');for(const [value,label]of[['old','从早到晚'],['new','最新在前']]){const option=el(order,'option','',label);option.value=value;}
+ const filter=el(tools,'select','lake-select');filter.setAttribute('aria-label','记录类型');for(const [value,label]of[['all','全部记录'],['review','审核与交付'],['progress','进展与变更'],['source','技能与交接']]){const option=el(filter,'option','',label);option.value=value;}
+ const count=el(historySection,'p','lake-record-count'),timeline=el(historySection,'div','lake-record-timeline');timeline.setAttribute('aria-label','任务执行时间线');
+ function drawHistory(){timeline.replaceChildren();let entries=current.history.map((e,i)=>({...e,index:i+1}));if(order.value==='new')entries.reverse();const q=search.value.trim().toLowerCase();entries=entries.filter(e=>!q||[e.id,e.actor,e.session,e.conversation_id,sourceFor(current,e).conversation,e.message,e.result,KINDS[e.kind],e.file,JSON.stringify(e.before),JSON.stringify(e.after)].join(' ').toLowerCase().includes(q)).filter(e=>filter.value==='all'||(filter.value==='review'?['submitted','reviewed']:filter.value==='source'?['skill_read','review_delivery','conversation_bound']:['created','claimed','updated','progress','commented','moved','assigned']).includes(e.kind));count.textContent='显示 '+entries.length+' / '+current.history.length+' 条；旧记录不会因新对话而丢失。';
+  for(const entry of entries){const row=el(timeline,'article','lake-record-entry');row.dataset.recordId=entry.id;const head=el(row,'header','lake-record-entry-head');el(head,'strong','',entry.actor||'未记录操作者');el(head,'span','lake-record-event',KINDS[entry.kind]||entry.kind);const date=el(head,'time','',time(entry.at));date.dateTime=entry.at;date.title=entry.at;el(head,'span','lake-record-entry-number','#'+entry.index);
+   const body=el(row,'div','lake-record-entry-body'),text=[entry.message,entry.result].filter(Boolean).join('\n\n');if(text.length>800){const preview=el(body,'p','lake-record-prose',text.slice(0,360)+'…'),expand=el(body,'details','lake-record-expand');el(expand,'summary','','展开完整记录（'+text.length+' 字）');prose(expand,text);expand.ontoggle=()=>{preview.hidden=expand.open;};}else prose(body,text);
+   if(entry.deliverables?.length){const links=el(body,'div','lake-record-entry-deliverables');el(links,'small','','本次提交的交付物');for(const link of entry.deliverables)deliverable(links,link);}
+   if(entry.before||entry.after){const changes=el(body,'details','lake-record-expand');el(changes,'summary','','查看本次属性变更');el(changes,'pre','',JSON.stringify({修改前:entry.before,修改后:entry.after},null,2));}
+   const provenance=el(row,'footer','lake-record-provenance'),source=sourceFor(current,entry);el(provenance,'span','',source.label+((entry.record_version||entry.task_version)?' · v'+(entry.record_version||entry.task_version):''));
+   if(source.conversation&&(!/workbuddy/i.test(entry.actor||'')))btn(provenance,'打开这条记录的原对话',()=>openConversation(source.conversation));else el(provenance,'span','lake-record-source-unavailable',entry.session==='obsidian-ui'?'来源：任务面板':'未保存可打开的原对话；执行会话标识保留在溯源信息中');
+   const trace=el(provenance,'details','lake-record-trace');el(trace,'summary','','溯源信息');const dl=el(trace,'dl');for(const [name,value]of[['记录 ID',entry.id],['原始时间',entry.at],['执行会话',entry.session],['原对话 ID',source.conversation],['技能文件',entry.file],['技能指纹',entry.sha256]])if(value){el(dl,'dt','',name);el(dl,'dd','',value);}btn(trace,'复制本条记录',()=>copy(['记录 ID：'+entry.id,'时间：'+entry.at,'操作者：'+entry.actor,'执行会话：'+entry.session,'原对话：'+(source.conversation||'未绑定'),text].join('\n')));
+  }if(!entries.length)el(timeline,'p','lake-taskboard-empty','没有匹配的执行记录。');
+ }
+ search.oninput=drawHistory;order.onchange=drawHistory;filter.onchange=drawHistory;drawHistory();
+ btn(bar,'跳到执行记录',()=>historySection.scrollIntoView({block:'start',behavior:'smooth'}));
+ const discussion=el(historySection,'section','lake-record-discussion');el(discussion,'h4','','补充讨论');const draft=el(discussion,'textarea','lake-input');draft.rows=3;draft.maxLength=20000;draft.placeholder='补充事实、问题或说明，保留在此任务的时间线中…';draft.setAttribute('aria-label','追加任务讨论');el(discussion,'p','lake-record-help','追加讨论不改变任务状态，也不会自动发送给 Agent；需要返工请使用验收流程。');const append=btn(discussion,'追加到任务记录',async()=>{if(!draft.value.trim())throw Error('请先填写讨论内容');append.disabled=true;try{const latest=await store.read(current.id);await store.comment({id:current.id,version:latest.version,etag:latest.etag,message:draft.value},USER);m.close();await render(env,{id:current.id});}finally{if(append.isConnected)append.disabled=false;}});
+
+ const properties=section('属性与来源',aside),dl=el(properties,'dl','lake-record-properties');
+ function property(name,value){el(dl,'dt','',name);const dd=el(dl,'dd');if(typeof value==='function')value(dd);else dd.textContent=String(value||'未设置');}
+ property('项目',dd=>{const a=el(dd,'a','internal-link',project.name);a.href=project.path;a.onclick=e=>{e.preventDefault();openNote(project.path);};});property('状态',core.LABELS[current.status]);property('优先级',core.PRIORITIES[current.priority]);property('负责人',current.assignee);property('截止日期',current.due_date);property('工作目录',project.code_dir);property('创建时间',time(current.created_at));property('最近更新',time(current.updated_at));property('任务版本','v'+current.version);
+ btn(bar,'属性与来源',()=>aside.scrollIntoView({block:'start',behavior:'smooth'}));
+ const meter=el(properties,'progress');meter.max=100;meter.value=current.progress;meter.setAttribute('aria-label','任务进度 '+current.progress+'%');
+ const related=(await store.list({project_id:current.project_id})).tasks.filter(t=>t.id!==current.id);if(related.length){const relations=section('同项目任务',aside);for(const other of related)btn(relations,other.title,()=>{m.close();render(env,{id:other.id});});}
+ const identity=section('稳定标识',aside);el(identity,'code','lake-record-code',current.id);btn(identity,'复制任务 ID',()=>copy(current.id));btn(identity,'查看原始任务笔记',()=>openNote(current.path));const fingerprint=el(identity,'details','lake-record-expand');el(fingerprint,'summary','','查看当前笔记指纹');el(fingerprint,'code','lake-record-code',current.etag);
+ if(current.claim){const claim=section('执行会话',aside);el(claim,'p','lake-record-prose',current.claim.agent);el(claim,'code','lake-record-code',current.claim.session);const target=resumeAgent.target(current);if(resumeAgent.provider(current)==='claudian'&&target)btn(claim,'返回当前执行对话',()=>openConversation(target));else el(claim,'p','lake-record-help','此标识不等于可打开的原生对话，不能据此冒充已送达。');}
+ if(current.skills?.length){const skills=section('关联百艺技能',aside);for(const skill of current.skills)btn(skills,skill.name,()=>skillPreview(skill));}
+ const foot=el(root,'div','lake-record-actions');btn(foot,'编辑任务',()=>{m.close();taskForm(current);});if(current.status==='in_review')btn(foot,'由我验收',()=>{m.close();reviewForm(current);},'lake-btn lake-primary');
+ if(current.review?.comment&&resumeAgent.provider(current)==='workbuddy')btn(foot,'复制修改意见给 WorkBuddy',()=>copy(resumeAgent.prompt(current)));
+ if(current.review?.status==='changes_requested'&&current.review.delivery?.status==='failed'&&resumeAgent.provider(current)!=='workbuddy')btn(foot,'重试通知原 Agent',async()=>{m.close();new env.api.Notice((await resumeAgent.resume(app,store,await store.read(current.id),USER)).message);});
+ btn(foot,'收起',()=>m.close());
+ let closed=false;const unsubscribe=store.subscribe(async()=>{if(closed)return;try{const latest=await store.record(current.id,'task');if(!closed&&latest.etag!==current.etag)update.hidden=false;}catch{}});const onClose=m.onClose.bind(m);m.onClose=()=>{closed=true;unsubscribe();onClose();};
+ m.open();return m;
+}
+module.exports={render,sourceFor,contextText,time};

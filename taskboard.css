@@ -1,0 +1,153 @@
+/* Local Markdown taskboard, sharing the lake's clear surfaces and type. */
+.lake-workbench-view .lake-taskboard{display:flex;flex-direction:column;min-height:0;min-width:0;gap:12px;padding:12px 16px;overflow:hidden}
+.lake-taskboard-toolbar{display:grid;grid-template-columns:repeat(3,minmax(110px,.75fr)) minmax(160px,1.5fr) auto;gap:10px;align-items:end;flex:none}
+.lake-taskboard-filter{display:flex;flex-direction:column;gap:4px;font-size:11px;line-height:1.4;min-width:0;color:#b4cdd2}
+.lake-taskboard-filter select{width:100%;min-width:0;min-height:34px;padding:5px 8px!important;font-size:12px!important}
+.lake-taskboard-toolbar>.lake-input{min-height:34px;padding:6px 10px!important;font-size:12px!important;width:100%}
+.lake-taskboard-summary{font-size:12px;line-height:1.5;color:#bad6db;flex:none}
+.lake-taskboard-warning{font-size:12px;line-height:1.6;color:#ffcfb7;padding:8px;border:1px solid #ffcfb744;border-radius:10px;white-space:pre-wrap}
+.lake-taskboard-warning[hidden]{display:none!important}
+.lake-taskboard-columns{flex:1;min-height:0;min-width:0;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(205px,1fr);gap:12px;overflow-x:auto;overflow-y:hidden;padding:0 0 10px;scrollbar-gutter:stable;overscroll-behavior-x:contain}
+.lake-taskboard-column{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;border:1px solid rgba(210,241,241,.18);border-radius:16px;background:rgba(9,43,53,.10)}
+.lake-taskboard-column-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border-bottom:1px solid rgba(210,241,241,.15);flex:none}
+.lake-taskboard-column-head h3{font-size:14px!important;font-weight:500!important;line-height:1.4;margin:0}
+.lake-taskboard-count{font-size:11px;color:#b8d9df;font-variant-numeric:tabular-nums}
+.lake-taskboard-card-list{display:flex;flex-direction:column;gap:10px;padding:10px;min-height:0;overflow-y:auto;overflow-x:hidden;flex:1}
+.lake-taskboard-card{border:1px solid rgba(210,241,241,.24);border-radius:12px;padding:12px;background:rgba(9,43,53,.25);cursor:grab;min-width:0;overflow-wrap:anywhere;box-shadow:none}
+.lake-taskboard-card:hover{border-color:rgba(210,241,241,.50)}
+.lake-taskboard-card:active{cursor:grabbing}
+.lake-taskboard-card:focus-visible{outline:2px solid #b8e7f6;outline-offset:2px}
+.lake-taskboard-card h4{font-size:15px!important;line-height:1.4!important;font-weight:500!important;margin:8px 0!important;color:#e0f0f1}
+.lake-taskboard-card-meta{display:flex;align-items:center;gap:8px;justify-content:space-between;font-size:10px;color:#a8c6cd}
+.lake-taskboard-card-meta>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lake-taskboard-priority{padding:2px 6px;border:1px solid #d2f1f133;border-radius:6px;flex:none}
+.lake-taskboard-priority.priority-urgent{color:#ffbdae;border-color:#ffbdae66}.lake-taskboard-priority.priority-high{color:#f1d294;border-color:#f1d29455}
+.lake-taskboard-card-description{font-size:12px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:0 0 8px!important;color:#bfd5da}
+.lake-taskboard-card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-block:6px}
+.lake-taskboard-card-tags>span{font-size:10px;padding:2px 6px;border:1px solid #b8e7f633;border-radius:7px;color:#bedee5}
+.lake-taskboard-card-owner{display:block;font-size:10px;line-height:1.6;margin:8px 0;color:#b6d1d8}
+.lake-taskboard-last-log{font-size:11px;line-height:1.5;color:#b6cdd3;border-top:1px solid #d2f1f11f;padding-top:8px;margin:6px 0 8px!important;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.lake-taskboard-card-tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.lake-taskboard-card-tools .lake-btn{font-size:10px!important;min-height:28px!important;padding:4px 7px!important;line-height:1.4;cursor:pointer}
+.lake-taskboard-move-select{width:100%;min-height:28px!important;font-size:11px!important;padding:4px 6px;background:rgba(9,43,53,.18);color:#c7e3e7;border:1px solid #d2f1f133;border-radius:8px}
+.lake-taskboard-move-select option,.lake-taskboard-filter option{background:#16353c;color:#e4f2ed}
+.lake-taskboard-column.is-drop-target{outline:2px solid #a7dbd4;outline-offset:-2px;background:rgba(93,163,152,.18)}
+.lake-taskboard-empty{padding:12px 4px;font-size:11px;line-height:1.7;color:#a1bcc5;text-align:center}
+.lake-taskboard-modal .modal.lake-taskboard-dialog{width:min(680px,calc(100vw - 28px));max-width:calc(100vw - 28px);max-height:90vh;display:flex;flex-direction:column;box-sizing:border-box;padding:20px;border:1px solid rgba(210,241,241,.32);border-radius:20px;background:transparent;color:#e4f2ed;box-shadow:0 14px 45px #00111833}
+.lake-taskboard-modal .modal-bg{background:rgba(1,17,25,.14)}
+.lake-taskboard-dialog>.modal-header{flex:none;min-height:40px;margin-bottom:12px;display:flex;align-items:center;gap:12px;padding-right:20px}
+.lake-taskboard-dialog .modal-title{font-size:22px;font-weight:400;line-height:1.3;letter-spacing:-.02em;color:#e4f2ed;min-width:0}
+.lake-taskboard-dialog .modal-close-button{color:#c2dce1}
+.lake-taskboard-dialog .modal-content{min-height:0;overflow:auto;line-height:1.6;font-size:14px;color:#d5e6e8;scrollbar-gutter:stable}
+.lake-taskboard-dialog .modal-content h3{font-size:15px;font-weight:500;margin:18px 0 8px}
+.lake-taskboard-dialog .modal-content p{margin:0 0 12px;overflow-wrap:anywhere}
+.lake-taskboard-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.lake-taskboard-form-field{display:flex;flex-direction:column;gap:6px;min-width:0;font-size:12px;color:#bdd6dc}
+.lake-taskboard-form-field :is(input,select,textarea){width:100%;min-width:0;box-sizing:border-box;background:rgba(9,43,53,.18)!important;color:#e4f2ed!important;border:1px solid #d2f1f140!important;border-radius:8px;padding:8px 10px;min-height:38px;font:14px/1.5 Inter,'Segoe UI','Microsoft YaHei',sans-serif}
+.lake-taskboard-form-field textarea{resize:vertical;min-height:80px}
+.lake-taskboard-form-field select option{background:#16353c;color:#e4f2ed}
+.lake-taskboard-form .is-wide,.lake-taskboard-form-footer{grid-column:1/-1}
+.lake-taskboard-form-error{grid-column:1/-1;color:#ffd0bf;font-size:12px;white-space:pre-wrap}
+.lake-taskboard-form-error:empty{display:none}
+.lake-taskboard-form-footer,.lake-taskboard-inline-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:12px}
+.lake-taskboard-dialog .lake-btn{min-height:34px;padding:6px 12px;border:1px solid #d2f1f140;border-radius:12px;background:rgba(13,65,82,.22);color:#e4f2ed;box-shadow:none;font-size:12px}
+.lake-taskboard-dialog .lake-primary{background:rgba(151,209,199,.80);color:#062b35}
+.lake-taskboard-project-row{padding:12px 0;border-bottom:1px solid #d2f1f133}
+.lake-taskboard-project-row:first-child h3{margin-top:0}.lake-taskboard-project-row small{font-size:11px;overflow-wrap:anywhere}
+.lake-taskboard-pre{white-space:pre-wrap;overflow-wrap:anywhere}
+.lake-taskboard-logs article{border-top:1px solid #d2f1f133;padding:10px 0}
+.lake-taskboard-logs small{font-size:11px;color:#a8c7ce}
+.lake-taskboard-check{display:flex;align-items:flex-start;gap:8px;margin:8px 0;font-size:13px;line-height:1.6}
+.lake-taskboard-check input{margin-top:4px;accent-color:#9bd7ca;flex:none}
+.lake-taskboard-deliverable a{color:#b8e7f6}
+.lake-panel:has(>.lake-taskboard)>.lake-panel-head{flex-wrap:wrap}
+.lake-panel:has(>.lake-taskboard)>.lake-panel-head>.lake-panel-actions{flex-wrap:wrap;justify-content:flex-end}
+@container lakepage (max-width:850px){.lake-taskboard-toolbar{grid-template-columns:repeat(3,minmax(0,1fr))}.lake-taskboard-toolbar>.lake-input{grid-column:1/3}.lake-taskboard-columns{grid-auto-columns:230px}}
+@container lakepage (max-width:480px){.lake-taskboard-toolbar{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.lake-taskboard-toolbar>.lake-input{grid-column:1/-1}.lake-taskboard-columns{grid-auto-columns:minmax(210px,80cqw)}.lake-taskboard-summary{font-size:11px}}
+@media(max-width:540px){.lake-taskboard-form{grid-template-columns:1fr}.lake-taskboard-modal .modal.lake-taskboard-dialog{padding:16px}.lake-taskboard-dialog .modal-title{font-size:20px}}
+
+.lake-taskboard-dialog{container-type:inline-size;container-name:taskform}
+@container taskform (max-width:480px){.lake-taskboard-form{grid-template-columns:1fr}}
+
+/* Click to browse the whole board; task movement remains a separate action. */
+.lake-taskboard-overview{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 12px;flex:none}
+.lake-taskboard-overview>.lake-taskboard-summary{flex:1;min-width:180px}
+.lake-taskboard-pan{display:flex;align-items:center;gap:6px;flex:none;margin-left:auto}
+.lake-taskboard-pan .lake-btn{min-height:32px!important;padding:5px 12px!important;font-size:12px!important;white-space:nowrap}
+.lake-taskboard-pan .lake-btn:disabled{opacity:.35;cursor:default}
+/* Grab the whole board; only the dotted handle moves a task between columns. */
+.lake-taskboard-columns{cursor:grab}
+.lake-taskboard-columns.is-panning,.lake-taskboard-columns.is-panning *{cursor:grabbing!important;user-select:none!important}
+.lake-taskboard-drag-handle{cursor:grab!important;background:transparent!important;border:0!important;box-shadow:none!important;min-width:24px;padding:0 4px!important;font-size:20px!important;line-height:24px}
+.lake-taskboard-drag-handle:active{cursor:grabbing!important}
+
+.lake-taskboard-card.is-task-dragging{opacity:.5}.lake-taskboard-card-project{white-space:normal;overflow-wrap:anywhere}.lake-taskboard-form-field small{font-size:12px;opacity:.7;line-height:1.5}
+
+.lake-taskboard-skill-picker{min-width:0;margin:0;padding:12px;border:1px solid #b8e4ed35;border-radius:16px}
+.lake-taskboard-skill-picker legend{padding:0 6px;font-size:14px}
+.lake-taskboard-skill-hint,.lake-taskboard-skill-count{font-size:12px;opacity:.75;margin:4px 0 8px}
+.lake-taskboard-skill-picker .lake-taskboard-inline-actions{flex-wrap:wrap;gap:6px}
+.lake-taskboard-skill-picker input[type=search]{flex:1;min-width:min(180px,100%)}
+.lake-taskboard-skill-options{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:6px}
+.lake-taskboard-skill-option{display:flex;align-items:center;gap:8px;border-bottom:1px solid #b8e4ed20;padding:6px 0}
+.lake-taskboard-skill-option>label{flex:1;min-width:0;margin:0;align-items:flex-start}
+.lake-taskboard-skill-option label>span{min-width:0;overflow-wrap:anywhere}
+.lake-taskboard-skill-option strong,.lake-taskboard-skill-option small{display:block;font-weight:400}
+.lake-taskboard-skill-option small{font-size:12px;opacity:.65;line-height:1.4}
+.lake-taskboard-skill-source{white-space:pre-wrap;overflow-wrap:anywhere;max-height:55vh;overflow:auto;font-size:13px}
+
+/* Task-centred context and provenance, scoped to the reading dialog. */
+.lake-taskboard-modal .modal.lake-task-record-dialog{width:min(1180px,calc(100vw - 28px));height:min(88vh,940px);container-type:inline-size;padding:20px 24px}
+.lake-task-record-dialog .modal-content{font-size:15px;line-height:1.85;overflow:auto}
+.lake-task-record{min-width:0}
+.lake-record-summary{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;padding:0 0 16px;border-bottom:1px solid #b8e4ed30;font-size:12px}
+.lake-record-status,.lake-record-event{border:1px solid #b8e4ed40;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.lake-record-summary .lake-btn{margin-left:0}
+.lake-record-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,260px);gap:28px;margin-top:8px;align-items:start}
+.lake-record-main,.lake-record-aside{min-width:0}
+.lake-record-aside{border-left:1px solid #b8e4ed25;padding-left:22px}
+.lake-record-section{padding:14px 0;border-bottom:1px solid #b8e4ed20;min-width:0;scroll-margin-top:12px}
+.lake-task-record-dialog .lake-record-section h3{font-size:17px;font-weight:500;margin:0 0 12px;line-height:1.5}
+.lake-task-record-dialog .lake-record-prose{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.85;margin:0 0 12px;user-select:text}
+.lake-task-record-dialog .lake-record-prose:last-child{margin-bottom:0}
+.lake-record-prose[hidden]{display:none!important}
+.lake-record-prose a{color:#bcecf2;text-decoration:underline;text-underline-offset:3px}
+.lake-record-acceptance{margin:0;padding-left:23px}.lake-record-acceptance li{padding:3px 0 3px 5px;overflow-wrap:anywhere}
+.lake-record-review{border-left:2px solid #e8c48b;padding-left:14px}
+.lake-record-review small{display:block;font-size:12px;opacity:.7;margin-bottom:8px}
+.lake-record-history-tools{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;margin-bottom:10px}
+.lake-record-history-tools input,.lake-record-history-tools select{min-width:0;width:100%;font-size:12px}
+.lake-record-count,.lake-record-help{font-size:12px;opacity:.72;line-height:1.6}
+.lake-record-timeline{padding-left:8px}
+.lake-record-entry{border-left:2px solid #b8e4ed35;padding:0 0 22px 18px;min-width:0}
+.lake-record-entry:last-child{padding-bottom:4px}
+.lake-record-entry-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:12px;margin-bottom:10px;line-height:1.6}
+.lake-record-entry-head strong{font-size:14px;font-weight:500}.lake-record-entry-head time{opacity:.7}.lake-record-entry-number{margin-left:auto;opacity:.5;font-variant-numeric:tabular-nums}
+.lake-record-entry-body{font-size:14px;line-height:1.85;min-width:0}
+.lake-record-provenance{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;font-size:11px;border-top:1px solid #b8e4ed20;padding-top:8px;margin-top:12px;color:#b3cfd6;letter-spacing:normal;text-align:left;position:static}
+.lake-record-provenance .lake-btn{font-size:11px;min-height:28px;padding:3px 8px}
+.lake-record-source-unavailable{opacity:.68}
+.lake-record-trace{flex-basis:100%;font-size:11px}
+.lake-record-trace dl{display:grid;grid-template-columns:90px minmax(0,1fr);gap:4px 10px;margin:10px 0}
+.lake-record-trace dt,.lake-record-trace dd{margin:0;min-width:0;overflow-wrap:anywhere;white-space:pre-wrap}
+.lake-record-trace dt{opacity:.7}
+.lake-record-expand summary,.lake-record-trace summary{cursor:pointer;color:#bbdfe7;font-size:12px;user-select:none}
+.lake-record-expand{margin:8px 0;min-width:0}
+.lake-record-expand pre{font-size:12px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%;overflow:auto}
+.lake-record-properties{display:grid;grid-template-columns:76px minmax(0,1fr);gap:10px 12px;font-size:12px;line-height:1.6}
+.lake-record-properties dt,.lake-record-properties dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.lake-record-properties dt{opacity:.65}
+.lake-record-aside .lake-record-section h3{font-size:14px}
+.lake-record-aside .lake-btn{font-size:11px;margin:6px 5px 0 0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.lake-record-aside progress{width:100%;height:6px;accent-color:#abdcd3}
+.lake-record-code{display:block;overflow-wrap:anywhere;white-space:pre-wrap;font-size:11px;line-height:1.7;background:transparent}
+.lake-record-actions{display:flex;flex-wrap:wrap;gap:8px;padding:14px 0 0;border-top:1px solid #b8e4ed35;margin-top:16px}
+.lake-record-update{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #e5c68c55;border-radius:12px;padding:8px 12px;font-size:12px;margin-top:12px}
+.lake-record-update[hidden]{display:none!important}
+.lake-record-discussion{margin-top:20px;padding-top:14px;border-top:1px solid #b8e4ed25}
+.lake-record-discussion h4{font-size:14px;font-weight:500;margin:0 0 8px}
+.lake-record-discussion textarea{width:100%;min-height:90px;resize:vertical;box-sizing:border-box;font-size:14px;line-height:1.7;font-family:inherit}
+@container(max-width:740px){.lake-record-layout{grid-template-columns:minmax(0,1fr);gap:12px}.lake-record-aside{border-left:0;border-top:1px solid #b8e4ed30;padding:10px 0 0}.lake-record-history-tools{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.lake-record-history-tools input{grid-column:1/-1}.lake-record-properties{grid-template-columns:90px minmax(0,1fr)}}
+@media(max-width:520px){.lake-taskboard-modal .modal.lake-task-record-dialog{padding:14px}.lake-record-entry{padding-left:12px}.lake-record-trace dl{grid-template-columns:minmax(0,1fr)}}
+
+.lake-record-history-tools select{min-height:34px!important;height:auto!important;line-height:1.5!important;padding:6px 24px 6px 8px!important;box-sizing:border-box}.lake-record-aside a{color:#bcecf2;text-underline-offset:3px}

@@ -1,0 +1,104 @@
+/* Native features, lake typography and transparent surfaces. */
+.lake-lingxi-root,.lake-lingxi-modal,.lake-lingxi-markdown{
+ --background-primary:transparent;--background-secondary:rgba(9,43,53,.08);--background-secondary-alt:rgba(9,43,53,.12);
+ --background-modifier-border:rgba(210,241,241,.24);--background-modifier-form-field:rgba(9,43,53,.14);
+ --text-normal:#d9edf0;--text-muted:#b1ccd3;--text-faint:#91afb8;--text-accent:#b8e7f6;--interactive-accent:#75bdb5;
+ --text-on-accent:#062b35;--interactive-normal:rgba(13,65,82,.16);--interactive-hover:rgba(184,231,246,.22);
+ --al-accent:#b8e7f6;--al-accent-soft:rgba(184,231,246,.12);--al-border:rgba(210,241,241,.22);--al-panel:transparent;--al-panel-raised:rgba(9,43,53,.10);
+ color:var(--text-normal);font-family:Inter,'Segoe UI','Microsoft YaHei',sans-serif;font-size:14px;line-height:1.5;
+}
+.lake-workbench-view .lake-lingxi-root{padding:12px 16px;min-height:0;min-width:0;overflow:hidden;container-type:inline-size;container-name:lingxi}
+.lake-lingxi-content{height:100%;min-height:0;min-width:0;overflow:auto;scrollbar-gutter:stable}
+.lake-lingxi-root .animelist-native-view{padding:0;background:transparent!important;color:var(--text-normal)}
+.lake-lingxi-root :is(.al-shell,.al-workspace-shell,.al-workspace-page,.al-workspace-page-body){background:transparent!important;min-width:0;max-width:100%;box-sizing:border-box}
+.lake-lingxi-root .al-workspace-shell{min-height:100%;padding:0;--al-panel:transparent;--al-panel-raised:rgba(9,43,53,.10)}
+.lake-lingxi-root :is(.al-workspace-header,.al-workspace-sidebar,.al-workspace-main,.al-hero,.al-type-tabs,.al-controls,.al-toolbar,.al-workspace-nav){background:transparent!important;border-color:var(--al-border)!important;box-shadow:none!important}
+.lake-lingxi-root :is(h1,h2){font-size:24px!important;font-weight:400!important;line-height:1.2!important;letter-spacing:-.02em}
+.lake-lingxi-root h3{font-weight:400;line-height:1.3}
+.lake-lingxi-root :is(button,input,select,textarea),.lake-lingxi-modal :is(button,input,select,textarea){font:inherit;max-width:100%;box-sizing:border-box}
+.lake-lingxi-root button,.lake-lingxi-modal button{border-radius:12px;border-color:rgba(210,241,241,.28);box-shadow:none;min-height:32px}
+.lake-lingxi-root :is(input,select,textarea),.lake-lingxi-modal :is(input,select,textarea){background:rgba(9,43,53,.18)!important;color:var(--text-normal);border:1px solid rgba(210,241,241,.30);border-radius:8px;min-width:0;padding:7px 10px}
+.lake-lingxi-root select option,.lake-lingxi-modal select option{background:#16353c;color:#edf5ed}
+.lake-lingxi-root :is(.al-type-tabs,.al-workspace-tabs,.al-filters,.al-controls,.al-toolbar){gap:8px;flex-wrap:wrap}
+.lake-lingxi-root :is(.al-title,.al-hero){margin:0}
+.lake-lingxi-root .al-hero{padding:10px 0 14px;gap:16px}
+.lake-lingxi-root .al-stat{background:rgba(9,43,53,.10);border-color:var(--al-border);padding:8px 12px}
+.lake-lingxi-root :is(.al-media-card,.al-card){background:rgba(9,43,53,.09)!important;border-color:var(--al-border)!important;box-shadow:none!important;border-radius:16px}
+.lake-lingxi-root :is(.al-cover,.al-poster){border-radius:12px}
+.lake-lingxi-root .al-shell{padding-bottom:12px}
+.lake-lingxi-root :is(button:focus-visible,input:focus-visible,select:focus-visible){outline:2px solid #b8e7f6;outline-offset:2px}
+.lake-lingxi-settings-tabs{display:flex;flex-wrap:wrap;gap:8px;padding:0 0 16px;margin-bottom:16px;border-bottom:1px solid var(--al-border)}
+.lake-lingxi-settings{padding:0 4px 20px;max-width:100%;min-width:0}
+.lake-lingxi-settings .setting-item{padding:14px 0;gap:16px;border-color:var(--al-border)}
+.lake-lingxi-settings .setting-item-info{min-width:0}
+.lake-lingxi-settings .setting-item-name{font-size:14px;font-weight:500}
+.lake-lingxi-settings .setting-item-description{font-size:12px;line-height:1.6;color:var(--text-muted)}
+.lake-lingxi-settings :is(.animelist-settings-tabs,.douban-setting-tabs){display:flex;flex-wrap:wrap;gap:8px}
+.lake-lingxi-modal .modal{background:transparent!important;color:#d9edf0;border:1px solid rgba(210,241,241,.32);border-radius:20px;box-shadow:0 12px 40px #00111833;max-height:90vh;backdrop-filter:none}
+.lake-lingxi-modal .modal-bg{background:rgba(1,17,25,.12)!important}
+.lake-lingxi-modal .modal-title{font-size:24px;font-weight:400;letter-spacing:-.02em;color:#d9edf0}
+.lake-lingxi-modal :is(.modal-content,.al-add-modal,.al-edit-modal){color:var(--text-normal);max-width:100%;min-width:0}
+.lake-lingxi-modal .modal-content{overflow:auto;scrollbar-gutter:stable}
+.lake-lingxi-modal :is(.al-add-form,.al-form-grid){min-width:0}
+@container lingxi (max-width:700px){
+ .lake-lingxi-content{scrollbar-gutter:auto}
+ .lake-lingxi-root .al-hero{flex-wrap:wrap}
+ .lake-lingxi-root .al-stats{flex-wrap:wrap}
+ .lake-lingxi-settings .setting-item{flex-wrap:wrap;gap:8px}
+ .lake-lingxi-settings .setting-item-control{justify-content:flex-start;flex-wrap:wrap;max-width:100%;margin-left:0}
+ .lake-lingxi-settings .setting-item-info{width:100%;flex-basis:100%}
+}
+@media(max-width:640px){
+ .lake-lingxi-modal .modal{width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important;padding:16px}
+ .lake-lingxi-modal .setting-item{flex-wrap:wrap}
+}
+
+/* Keep the collection visible above the fold instead of stacking large headers. */
+.lake-lingxi-root .al-workspace-header{min-height:32px!important;padding:0 2px 6px!important;gap:12px}
+.lake-lingxi-root .al-workspace-title{font-size:14px!important;font-weight:500;opacity:.72}
+.lake-lingxi-root .al-workspace-nav-row{padding:0!important;gap:8px}
+.lake-lingxi-root .al-workspace-nav{gap:8px}
+.lake-lingxi-root .al-workspace-tab{padding:7px 12px!important;min-height:34px!important;font-size:13px}
+.lake-lingxi-root .al-workspace-page-header{min-height:40px!important;padding:8px 0!important;flex-wrap:wrap;gap:8px}
+.lake-lingxi-root .al-workspace-page-title{font-size:20px!important}
+.lake-lingxi-root .al-workspace-page-body{padding-top:4px!important}
+.lake-lingxi-root .al-type-tabs{margin:8px 0 10px!important;padding:3px!important;gap:3px!important;width:auto;flex-wrap:wrap}
+.lake-lingxi-root .al-type-tab{padding:6px 10px!important;min-height:32px;font-size:13px}
+.lake-lingxi-root .al-toolbar{margin-bottom:10px;gap:8px}
+.lake-lingxi-root .al-search{min-height:36px}
+.lake-lingxi-root .al-search input{padding-block:6px!important}
+.lake-lingxi-root .al-shell .al-title{font-size:22px!important}
+.lake-lingxi-root .al-desc{margin:4px 0 0;font-size:12px}
+.lake-lingxi-root .al-workspace-page-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lake-lingxi-root .al-workspace-page-actions button{min-height:34px;padding:6px 12px;font-size:13px}
+.lake-lingxi-root .al-workspace-shell .al-toolbar{grid-template-columns:minmax(180px,1fr) auto auto}
+@container lingxi (max-width:900px){.lake-lingxi-root .al-workspace-shell .al-toolbar{grid-template-columns:minmax(0,1fr) auto}.lake-lingxi-root .al-layout-controls{grid-column:1/-1}}
+@container lingxi (max-width:600px){
+ .lake-lingxi-root .al-workspace-shell .al-toolbar{grid-template-columns:minmax(0,1fr)}
+ .lake-lingxi-root .al-workspace-header,.lake-lingxi-root .al-workspace-page-header{flex-wrap:wrap}
+ .lake-lingxi-root .al-workspace-page-actions{margin-left:0}
+ .lake-lingxi-root .al-type-tab{padding:5px 8px!important;font-size:12px}
+}
+/* One compact secondary navigation row; retain every original action. */
+.lake-lingxi-root.animelist-native-view,.lake-lingxi-root .animelist-native-view{--al-accent:#b8e7f6}
+.lake-lingxi-root .animelist-native-view .al-workspace-shell{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-content:start;column-gap:8px;padding:0!important}
+.lake-lingxi-root .animelist-native-view .al-workspace-header{grid-column:2;grid-row:1;min-height:36px!important;padding:0!important;align-self:start}
+.lake-lingxi-root .animelist-native-view .al-workspace-brand{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.lake-lingxi-root .animelist-native-view .al-workspace-header-actions button{height:32px!important;min-height:32px!important;padding:5px 10px!important;font-size:12px!important}
+.lake-lingxi-root .animelist-native-view .al-workspace-nav-row{grid-column:1;grid-row:1;min-height:36px!important;min-width:0;overflow:auto;gap:6px}
+.lake-lingxi-root .animelist-native-view .al-workspace-nav{display:flex!important;flex-wrap:nowrap;gap:4px!important;min-width:0;overflow:auto}
+.lake-lingxi-root .animelist-native-view .al-workspace-nav .al-workspace-tab{font-size:12px!important;height:34px!important;min-height:34px!important;padding:5px 9px!important;white-space:nowrap;flex:none}
+.lake-lingxi-root .animelist-native-view .al-workspace-page{grid-column:1/-1;grid-row:2;padding:8px 0 0!important;min-width:0}
+.lake-lingxi-root .animelist-native-view .al-workspace-page-header{min-height:36px!important;gap:8px!important;padding:4px 0!important;margin:0!important}
+.lake-lingxi-root .animelist-native-view .al-workspace-page-actions button{min-height:32px!important;height:auto!important;font-size:12px!important;padding:5px 10px!important}
+.lake-lingxi-root .animelist-native-view .al-workspace-page-body{padding:4px 0 0!important}
+.lake-lingxi-root .animelist-native-view .al-library-workspace-type-tabs{height:auto;min-height:34px!important;margin:6px 0 8px!important;padding:2px!important;gap:3px!important}
+.lake-lingxi-root .animelist-native-view .al-library-workspace-type-tabs .al-type-tab{min-height:28px!important;height:28px!important;padding:4px 8px!important;font-size:12px!important;line-height:1.4!important}
+.lake-lingxi-root .animelist-native-view .al-library-workspace-toolbar{min-height:36px;padding:5px!important;margin-bottom:8px!important;gap:6px!important}
+.lake-lingxi-root .animelist-native-view .al-library-workspace-toolbar :is(button,input,select){min-height:30px!important;font-size:12px!important;line-height:1.4}
+.lake-lingxi-root .animelist-native-view .al-library-workspace-toolbar input{padding:5px 8px!important}
+.lake-lingxi-root .animelist-native-view :is(.al-status-tabs,.al-library-workspace-status-tabs){margin-block:6px!important;gap:6px!important}
+.lake-lingxi-root .animelist-native-view :is(.al-status-tab,.al-library-workspace-status-tab){min-height:30px!important;padding:5px 9px!important;font-size:12px!important}
+@container lingxi (max-width:600px){.lake-lingxi-root .animelist-native-view .al-workspace-page-header{gap:6px!important}.lake-lingxi-root .animelist-native-view .al-workspace-nav .al-workspace-tab{padding-inline:6px!important;font-size:11px!important}}
+/* Simplified Chinese glyphs for Lingxi UI only. */
+.lake-lingxi-root,.lake-lingxi-modal{font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",system-ui,sans-serif}

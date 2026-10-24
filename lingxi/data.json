@@ -1,0 +1,52 @@
+{
+  "interfaceLanguage": "zh-CN",
+  "storageMode": "managed",
+  "libraryRoot": "灵犀收藏库",
+  "flatMediaFolder": "灵犀收藏库",
+  "additionalScanFolders": [
+    "灵犀收藏库/豆瓣导入/movie",
+    "灵犀收藏库/豆瓣导入/book",
+    "灵犀收藏库/豆瓣导入/teleplay"
+  ],
+  "coverFolder": "灵犀收藏库/Covers",
+  "templateFolder": "灵犀收藏库/Templates",
+  "timelineMaxStackDepth": 3,
+  "googleBooksApiKey": "",
+  "providers": {
+    "douban": true,
+    "bangumi": true,
+    "anilist": true,
+    "openlibrary": true
+  },
+  "searchLanguages": {
+    "chinese": true,
+    "english": true,
+    "original": true
+  },
+  "tagCatalog": [],
+  "specialLabelMode": "favorite",
+  "releaseTracking": {
+    "enabled": false,
+    "automatic": false,
+    "lastAutomaticCheckAt": ""
+  },
+  "migrations": {
+    "mediaStatus": 0
+  },
+  "uiState": {
+    "section": "library",
+    "type": "movie",
+    "status": "all",
+    "filters": {
+      "companies": [],
+      "quarter": "",
+      "tags": []
+    },
+    "sort": "completed-desc",
+    "view": "grid",
+    "layoutColumns": {
+      "grid": 5,
+      "poster": 3
+    }
+  }
+}

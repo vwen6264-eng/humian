@@ -1,0 +1,12 @@
+# User state and local backups
+/data.json
+/pond*.json*
+/glass.json
+/music-position.json
+/taskboard-acceptance.json
+/taskboard-release-checksums.json
+*.pending
+*.bak
+*.log
+node_modules/
+# These tracked files are sanitized initial configurations; retain local copies on upgrades.
