@@ -1,5 +1,5 @@
 'use strict';
-const SURFACES='.lake-workbench-view .lake-panel,.lake-workbench-view .lake-detail,.lake-workbench-view .lake-play-panel,.lake-workbench-view .lake-play-info,.lake-workbench-view .lake-wiki-preview-drawer,.lake-pond-birth-modal .modal,.lake-pond-remove-modal .modal,.lake-lingxi-modal .modal,.lake-taskboard-modal .modal';
+const SURFACES='.lake-workbench-view .lake-assistant-window,.lake-workbench-view .lake-panel,.lake-workbench-view .lake-detail,.lake-workbench-view .lake-play-panel,.lake-workbench-view .lake-play-info,.lake-workbench-view .lake-wiki-preview-drawer,.lake-pond-birth-modal .modal,.lake-pond-remove-modal .modal,.lake-lingxi-modal .modal,.lake-taskboard-modal .modal';
 function alphaOf(transparency){if(!Number.isFinite(transparency)||transparency<0||transparency>100)throw Error('透明度应为 0–100');return (100-transparency)/100;}
 function attach(view,api){
  const plugin=view.plugin;if(plugin.glassControls){plugin.glassControls.scan();return;}
@@ -34,8 +34,8 @@ function attach(view,api){
  const outside=e=>{if(popover&&!popover.contains(e.target)&&!trigger?.contains(e.target))hide();};
  const escape=e=>{if(e.key==='Escape'&&popover){const button=trigger;hide();button?.focus();e.preventDefault();e.stopImmediatePropagation();}};
  document.addEventListener('pointerdown',outside,true);document.addEventListener('keydown',escape,true);window.addEventListener('resize',position);
- plugin.glassControls={scan,setValue,persist,getValue:()=>transparency,flush:()=>saveQueue};
- plugin.register(()=>{closed=true;observer.disconnect();if(raf)cancelAnimationFrame(raf);hide();document.removeEventListener('pointerdown',outside,true);document.removeEventListener('keydown',escape,true);window.removeEventListener('resize',position);for(const [node,state] of tracked)restore(node,state);tracked.clear();plugin.glassControls=null;});
+ plugin.glassControls={scan,setValue,persist,getValue:()=>transparency,flush:()=>saveQueue,dispose};
+ function dispose(){if(closed)return;closed=true;observer.disconnect();if(raf)cancelAnimationFrame(raf);hide();document.removeEventListener('pointerdown',outside,true);document.removeEventListener('keydown',escape,true);window.removeEventListener('resize',position);for(const [node,state] of tracked)restore(node,state);tracked.clear();plugin.glassControls=null;}plugin.register(dispose);
  scan();const initialRevision=revision;
  (async()=>{if(await adapter.exists(file)){const saved=JSON.parse(await adapter.read(file));if(saved.version!==1)throw Error('不支持的设置版本');alphaOf(saved.transparency);if(!closed&&revision===initialRevision)setValue(saved.transparency);}})().catch(()=>notice('背景透明度设置读取失败，暂时保持全透明；原文件未改动。'));
 }

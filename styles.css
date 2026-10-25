@@ -938,3 +938,156 @@ body .workspace-leaf-content .view-content.lake-workbench-view{position:relative
 /* Unified workbench typography, including plugin-owned detached dialogs. */
 :is(.lake-workbench-view,.lake-taskboard-modal,.lake-taskboard-dialog,.lake-skill-import,.lake-detail,.lake-play-panel){--font-interface:LakePlayfulNav,"Microsoft YaHei",sans-serif;--font-text:LakePlayfulNav,"Microsoft YaHei",sans-serif;--shop-ui:LakePlayfulNav,"Microsoft YaHei",sans-serif}
 :is(.lake-workbench-view,.lake-taskboard-modal,.lake-taskboard-dialog,.lake-skill-import,.lake-detail,.lake-play-panel),:is(.lake-workbench-view,.lake-taskboard-modal,.lake-taskboard-dialog,.lake-skill-import,.lake-detail,.lake-play-panel) *{font-family:LakePlayfulNav,"Microsoft YaHei",sans-serif!important}
+
+/* Task description AI writing: preview first, never auto-save. */
+.lake-task-ai-tools{display:flex;flex-direction:column;gap:8px;min-width:0}.lake-task-ai-actions{display:flex;flex-wrap:wrap;gap:8px}.lake-task-ai-status{color:#b8d5df;font-size:12px;line-height:1.6}.lake-task-ai-preview{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid #a4d4df40;border-radius:12px;background:#09323b12;min-width:0}.lake-task-ai-preview[hidden],.lake-task-ai-tools button[hidden]{display:none!important}.lake-task-ai-original{white-space:pre-wrap;overflow-wrap:anywhere;max-height:140px;overflow:auto;margin:0;padding:8px;background:transparent;border:1px solid #a4d4df20;border-radius:8px;font-size:13px}.lake-task-ai-preview textarea{width:100%;min-height:160px;resize:vertical;line-height:1.7}.lake-task-ai-tools .lake-btn{min-height:34px;padding:6px 12px}
+
+.lake-task-ai-delivery[hidden]{display:none!important}.lake-task-ai-delivery{display:flex;flex-direction:column;gap:8px}
+
+/* Optional per-task colors, transparent and independent of task state. */
+.lake-task-color-tools{display:flex;flex-direction:column;gap:8px}.lake-task-color-palette{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.lake-task-color-swatch{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:5px 9px!important}.lake-task-color-swatch[aria-pressed=true]{outline:1px solid #d0ecf0;outline-offset:1px}.lake-task-color-dot{display:inline-block;width:11px;height:11px;border-radius:50%;flex:none}.lake-task-color-custom{display:flex;gap:7px;align-items:center;font-size:12px}.lake-task-color-custom input{width:34px;height:28px;padding:2px;background:transparent;border:1px solid #acd7df50;border-radius:7px}.lake-task-color-status{font-size:12px;color:#b2ccd4}
+.lake-workbench-view .lake-taskboard .lake-taskboard-card.has-task-color{border-left:3px solid var(--lake-task-color)!important;background:linear-gradient(110deg,color-mix(in srgb,var(--lake-task-color) 15%,transparent),rgba(5,30,42,.08))!important}
+
+/* WeChat connection surface, scoped to the lake workbench. */
+.lake-wechat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-content:start;overflow:auto}.lake-wechat-card{padding:16px;border:1px solid #b7dce33d;border-radius:16px;background:#082b3618;min-width:0}.lake-wechat-card p{font-size:13px;line-height:1.65;overflow-wrap:anywhere}.lake-wechat-card h3{margin:0 0 10px}.lake-wechat-actions{display:flex;gap:8px;flex-wrap:wrap}.lake-wechat-actions .lake-btn{min-height:34px;padding:6px 12px}.lake-wechat-field{display:flex;flex-direction:column;gap:7px;margin:12px 0;font-size:13px}.lake-wechat-field select{width:100%;min-width:0}.lake-wechat-help{white-space:pre-wrap;overflow-wrap:anywhere;background:transparent;padding:0;font-size:13px;line-height:1.75}.lake-wechat-qr{margin-top:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}.lake-wechat-qr[hidden]{display:none!important}.lake-wechat-qr canvas{width:220px;height:220px;max-width:100%;object-fit:contain;image-rendering:pixelated;border-radius:8px}.lake-wechat-qr p{flex:1;min-width:160px}@media(max-width:900px){.lake-wechat{grid-template-columns:1fr;gap:12px}.lake-wechat-card{padding:12px}}
+
+.lake-wechat .lake-wechat-field{display:grid;gap:8px;margin:12px 0}.lake-wechat .lake-wechat-field select{min-height:44px;height:auto;line-height:1.5;padding:9px 14px;width:100%;box-sizing:border-box}.lake-wechat .lake-wechat-qr{align-items:center;flex-wrap:wrap}.lake-wechat .lake-wechat-qr canvas{flex:0 0 auto;max-width:100%;height:auto}.lake-wechat .lake-wechat-qr p{flex:1 1 220px}
+
+/* Content-sized dialogs must not inherit the panel's zero flex basis. */
+.lake-workbench-view .lake-detail:is(.lake-planner-editor,.lake-wiki-dialog,.lake-travel-dialog,.lake-create-confirm,.lake-create-config,.lake-skill-import):not([data-lake-moved="true"]){
+ position:absolute!important;inset:16px 0!important;width:min(760px,calc(100% - 32px))!important;
+ max-width:calc(100% - 32px)!important;height:fit-content!important;max-height:calc(100% - 32px)!important;
+ margin:auto!important;transform:none!important;box-sizing:border-box;
+}
+.lake-workbench-view .lake-detail:is(.lake-planner-editor,.lake-wiki-dialog,.lake-travel-dialog,.lake-create-confirm,.lake-create-config,.lake-skill-import)>.lake-detail-body{
+ flex:0 1 auto;min-height:0;height:auto;max-height:none;overflow:auto;overscroll-behavior:contain;
+}
+.lake-workbench-view .lake-detail>.lake-modal-resize-handle{position:absolute;right:0;bottom:0;flex:none}
+.lake-workbench-view .lake-planner-editor .lake-editor-form{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px 16px}
+.lake-workbench-view .lake-detail :is(.lake-input,.lake-select){box-sizing:border-box;max-width:100%;min-width:0}
+.lake-workbench-view .lake-detail .lake-settings-footer{position:static;bottom:auto;flex-wrap:wrap;margin-top:16px;gap:10px}
+.lake-workbench-view .lake-travel-location-field .lake-input{height:40px;font-size:16px;line-height:1.4;padding:8px 12px}
+.lake-workbench-view .lake-travel-location-dialog .lake-detail-body{padding:16px 20px}
+.lake-workbench-view .lake-travel-location-form{gap:10px}
+@container lakedialog (max-width:520px){
+ .lake-workbench-view .lake-planner-editor .lake-editor-form{grid-template-columns:minmax(0,1fr)!important}
+ .lake-workbench-view .lake-travel-location-field{grid-template-columns:minmax(0,1fr);gap:4px}
+}
+/* Month overview fits all six weeks; busy dates scroll inside their own cells. */
+.lake-workbench-view .lake-month-view{box-sizing:border-box;padding:8px;min-height:0}
+.lake-workbench-view .lake-month-module{display:grid;grid-template-rows:auto auto auto minmax(0,1fr);width:min(1100px,100%);height:100%;box-sizing:border-box;overflow:hidden}
+.lake-workbench-view .lake-month-grid{min-height:0;grid-template-rows:repeat(6,minmax(0,1fr));grid-template-columns:repeat(7,minmax(0,1fr));overflow:hidden}
+.lake-workbench-view .lake-month-week{grid-template-columns:repeat(7,minmax(0,1fr));position:static}
+.lake-workbench-view .lake-month-day{min-height:0;overflow:auto;overscroll-behavior:contain}
+.lake-workbench-view .lake-month-module>.lake-planner-bar{height:auto;min-height:44px;flex-wrap:wrap;padding:6px 10px;gap:8px}
+.lake-workbench-view .lake-month-day-number{position:sticky;top:0;z-index:1}
+
+/* WeChat conversation: one readable thread, with connection tools folded away. */
+.lake-workbench-view .lake-wechat-shell{flex:1 1 0;min-height:0;min-width:0;display:flex;flex-direction:column;gap:10px;padding:12px 20px;overflow:hidden;box-sizing:border-box}
+.lake-workbench-view .lake-wechat-chat{flex:1 1 0;min-height:0;display:flex;flex-direction:column;border:1px solid rgba(210,241,241,.18);border-radius:18px;overflow:hidden;background:rgba(4,27,39,.06)}
+.lake-wechat-chat-bar{flex:none;padding:9px 16px;border-bottom:1px solid #d2f1f11c;font-size:12px;color:#b8e7f6}
+.lake-wechat-thread{flex:1 1 0;min-height:0;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:18px;padding:18px 22px;scrollbar-gutter:stable}
+.lake-wechat-message{flex:none;max-width:min(86%,760px);min-width:0;align-self:flex-start}
+.lake-wechat-message.is-user{align-self:flex-end}
+.lake-wechat-message-meta{display:flex;gap:12px;align-items:center;font-size:12px;color:#b8e7f6b0;margin:0 4px 6px}
+.lake-wechat-message.is-user .lake-wechat-message-meta{justify-content:flex-end}
+.lake-wechat-bubble{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;padding:12px 16px;border:1px solid #d2f1f128;border-radius:4px 16px 16px;color:#e8f8fb;background:rgba(11,46,59,.24);user-select:text}
+.lake-wechat-message.is-user .lake-wechat-bubble{border-radius:16px 4px 16px 16px;background:rgba(127,195,210,.13)}
+.lake-wechat-message-status{display:block;margin:5px 4px 0;font-size:11px;color:#b8e7f69c}
+.lake-wechat-composer{flex:none;padding:12px 16px;border-top:1px solid #d2f1f126;background:transparent}
+.lake-workbench-view .lake-wechat-input{display:block;width:100%;min-height:64px;max-height:140px;resize:vertical;box-sizing:border-box;padding:10px 12px;border:1px solid #d2f1f13a;border-radius:12px;line-height:1.5;background:rgba(4,27,39,.15);color:#e8f8fb}
+.lake-wechat-compose-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
+.lake-wechat-compose-foot small{font-size:11px;line-height:1.5}
+.lake-wechat-compose-foot button{flex:none}
+.lake-wechat-compose-error:empty{display:none}
+.lake-wechat-compose-error{font-size:12px;margin:6px 0 0!important}
+.lake-wechat-settings{flex:0 0 auto;max-height:42%;overflow:auto;border:1px solid #d2f1f126;border-radius:12px}
+.lake-wechat-settings>summary{padding:10px 14px;cursor:pointer;font-size:13px;color:#b8e7f6}
+.lake-workbench-view .lake-wechat-settings>.lake-wechat{padding:10px;overflow:visible}
+.lake-wechat-welcome{margin:auto;max-width:400px;text-align:center;padding:24px}
+@media(max-width:700px){.lake-workbench-view .lake-wechat-shell{padding:8px;gap:8px}.lake-wechat-thread{padding:12px;gap:14px}.lake-wechat-message{max-width:95%}.lake-wechat-composer{padding:10px}.lake-wechat-compose-foot{align-items:flex-end}.lake-wechat-compose-foot small{max-width:70%}.lake-wechat-bubble{padding:10px 12px}}
+.lake-workbench-view button.lake-wechat-source{border:0;box-shadow:none;background:transparent;padding:0 4px;min-height:0;height:auto;font-size:11px;color:#b8e7f6a0}
+@container lakepage (max-width:700px){.lake-workbench-view .lake-wechat-settings>.lake-wechat{grid-template-columns:minmax(0,1fr)}.lake-wechat-thread{padding:10px}.lake-wechat-message{max-width:96%}.lake-wechat-compose-foot small{max-width:65%}}
+
+/* Independent Codex assistant: lake-themed floating launcher and window. */
+.lake-workbench-view .lake-assistant-entry{right:24px;bottom:24px;left:auto;top:auto;z-index:35;cursor:grab;touch-action:none}
+.lake-workbench-view .lake-assistant-entry:active{cursor:grabbing}
+.lake-assistant-entry>span:first-child{display:flex}.lake-assistant-entry svg{width:20px;height:20px}
+.lake-workbench-view .lake-assistant-window{position:absolute;right:24px;top:80px;width:min(720px,calc(100% - 32px));height:min(650px,calc(100% - 104px));max-width:100%;max-height:100%;z-index:140;display:flex;flex-direction:column;box-sizing:border-box;min-width:0;min-height:0;border:1px solid rgba(210,241,241,.34);border-radius:20px;background:rgba(5,32,44,.22);backdrop-filter:blur(12px);box-shadow:0 12px 40px #00131b38,inset 0 1px 0 #ffffff20;overflow:hidden;color:#e8f8fb;container-type:inline-size;container-name:lakeassistant}
+.lake-workbench-view .lake-assistant-window>.lake-panel-head{flex:none;padding:10px 16px;min-height:52px;border-bottom:1px solid #d2f1f126;display:flex;gap:12px;align-items:center;background:transparent}
+.lake-assistant-window>.lake-panel-head h3{font-size:20px;margin:0}.lake-assistant-state{flex:1;font-size:11px}
+.lake-assistant-tools{display:flex;align-items:center;gap:8px;padding:8px 12px;flex:none;flex-wrap:wrap}
+.lake-assistant-tools>select{flex:1;min-width:80px;max-width:60%;height:34px}
+.lake-assistant-tools>.lake-btn{font-size:12px;padding:5px 10px;min-height:32px}
+.lake-assistant-options{position:relative;font-size:12px;cursor:pointer}
+.lake-assistant-config{position:absolute;top:28px;right:0;width:300px;max-width:calc(100vw - 64px);max-height:360px;overflow:auto;z-index:8;display:grid;gap:10px;padding:14px;border:1px solid #d2f1f144;border-radius:14px;background:rgba(5,32,44,.95)}
+.lake-assistant-config small{overflow-wrap:anywhere;line-height:1.6}.lake-assistant-config select{width:100%;min-height:36px}
+.lake-assistant-thread{padding:14px;gap:14px}.lake-assistant-empty{margin:auto;line-height:1.7;text-align:center;color:#b8e7f6}
+.lake-assistant-approvals{flex:0 0 auto;max-height:40%;overflow:auto;border-top:1px solid #d2f1f13a;padding:10px 14px;background:rgba(66,92,99,.12)}
+.lake-assistant-approvals[hidden]{display:none}.lake-assistant-approval pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:130px;overflow:auto;margin:8px 0;font-size:12px}
+.lake-assistant-approval .lake-input{width:100%;box-sizing:border-box}.lake-assistant-approval .lake-assistant-tools{padding:8px 0}
+.lake-assistant-events{flex:none;max-height:20%;overflow:auto;padding:6px 14px;font-size:11px;border-top:1px solid #d2f1f11c}.lake-assistant-events summary{cursor:pointer}.lake-assistant-events p{margin:5px 0;overflow-wrap:anywhere}
+.lake-assistant-window>.lake-modal-resize-handle{position:absolute;bottom:0;right:0}
+@container lakeassistant (max-width:480px){.lake-assistant-tools{gap:6px;padding:6px 10px}.lake-assistant-window>.lake-panel-head h3{font-size:17px}.lake-assistant-state{font-size:10px}.lake-assistant-window .lake-wechat-message{max-width:95%}.lake-assistant-window .lake-wechat-composer{padding:8px}}
+
+.lake-workbench-view .lake-assistant-entry.is-awaiting{box-shadow:0 0 0 2px #dfc88999,inset 0 1px 0 #ffffff33}
+
+.lake-workbench-view .lake-assistant-entry{z-index:160}
+.lake-workbench-view .lake-assistant-window{height:min(620px,calc(100% - 160px));background:transparent;backdrop-filter:none}
+.lake-assistant-tools>select,.lake-assistant-config select{height:auto;min-height:38px;line-height:1.4;padding:6px 10px;box-sizing:border-box}
+.lake-assistant-window .lake-wechat-compose-foot small{flex:1}
+
+.lake-assistant-config{width:min(300px,calc(100cqw - 32px));box-sizing:border-box}
+
+.lake-assistant-composer-options{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:10px}
+.lake-assistant-choice{display:grid;grid-template-columns:minmax(0,1fr);gap:5px;min-width:0;font-size:12px;color:#b8e7f6}
+.lake-workbench-view .lake-assistant-choice select{width:100%;max-width:100%;min-width:0;box-sizing:border-box;min-height:36px;height:auto;line-height:1.4;padding:6px 10px;border-radius:10px;background:rgba(5,32,44,.18);border:1px solid #d2f1f13a;color:#e8f8fb}
+@container lakeassistant (max-width:380px){.lake-assistant-composer-options{grid-template-columns:minmax(0,1fr);gap:7px}.lake-assistant-choice{grid-template-columns:60px minmax(0,1fr);align-items:center}}
+.lake-assistant-composer-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+@container lakeassistant (max-width:580px){.lake-assistant-composer-options{grid-template-columns:minmax(0,1fr)}.lake-assistant-choice{grid-template-columns:68px minmax(0,1fr);align-items:center}}
+.lake-assistant-window .lake-glass-actions{flex:none}
+
+.lake-workbench-view .lake-wechat-entry{right:108px;bottom:24px;left:auto;top:auto;z-index:160;cursor:grab;touch-action:none}.lake-workbench-view .lake-wechat-entry:active{cursor:grabbing}.lake-wechat-entry>span:first-child{display:flex}.lake-wechat-entry svg{width:20px;height:20px}
+/* Compact assistant composer and visual account meters. */
+.lake-workbench-view .lake-assistant-window>.lake-panel-head{flex-wrap:wrap;gap:10px}
+.lake-assistant-window .lake-assistant-state{flex:none;font-size:10px}
+.lake-assistant-quota{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex:1;min-width:150px;margin-left:auto;font-size:11px}
+.lake-assistant-quota>span{display:flex;align-items:center;gap:8px}
+.lake-assistant-quota-chip{display:grid;grid-template-columns:auto auto;gap:1px 7px;min-width:56px}
+.lake-assistant-quota-chip small{font-size:10px}.lake-assistant-quota-chip strong{font-size:12px;font-weight:500}
+.lake-assistant-quota-track{grid-column:1/-1;display:block;height:3px;border-radius:4px;background:#d2f1f123;overflow:hidden}
+.lake-assistant-quota-track i{display:block;height:100%;background:#a9e1dd;border-radius:4px}
+.lake-workbench-view .lake-assistant-quota-refresh{height:28px;min-height:28px;width:28px;padding:5px;border:0;box-shadow:none;background:transparent}
+.lake-assistant-quota-refresh svg{height:15px;width:15px}
+.lake-assistant-input-wrap{position:relative;min-width:0}.lake-assistant-window .lake-assistant-input-wrap textarea{padding-bottom:36px;min-height:82px}
+.lake-assistant-input-tools{position:absolute;right:8px;bottom:7px;display:flex;gap:5px}
+.lake-workbench-view .lake-assistant-input-tools .lake-btn{font-size:11px;padding:3px 8px;height:25px;min-height:25px;border-radius:8px;background:rgba(12,45,55,.16)}
+.lake-assistant-bottom-bar{display:flex;align-items:center;gap:8px;margin-top:8px;min-width:0}
+.lake-assistant-bottom-bar .lake-assistant-composer-options{display:flex;align-items:center;gap:6px;flex:1;min-width:0;margin:0}
+.lake-assistant-bottom-bar .lake-assistant-choice{display:block;min-width:64px;flex:1;position:relative}
+.lake-assistant-bottom-bar .lake-assistant-choice:nth-child(1){flex:1.4;max-width:180px;min-width:80px}
+.lake-assistant-bottom-bar .lake-assistant-choice:nth-child(2){flex:1.1;max-width:140px;min-width:70px}
+.lake-assistant-bottom-bar .lake-assistant-choice:nth-child(3){flex:.8;max-width:110px}
+.lake-assistant-bottom-bar .lake-assistant-choice>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.lake-workbench-view .lake-assistant-bottom-bar .lake-assistant-choice select{height:34px;min-height:34px;padding:5px 8px;font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+.lake-assistant-bottom-bar .lake-wechat-compose-foot{margin:0;gap:6px;flex:none}
+.lake-workbench-view .lake-assistant-bottom-bar .lake-btn{min-height:34px;height:34px;padding:4px 10px;font-size:12px}
+.lake-assistant-attachments{display:flex;flex-wrap:wrap;gap:6px;max-height:90px;overflow:auto;margin-bottom:7px}.lake-assistant-attachments[hidden]{display:none}
+.lake-assistant-attachment{display:flex;align-items:center;gap:6px;max-width:210px;border:1px solid #d2f1f130;border-radius:9px;padding:4px 6px;font-size:11px}
+.lake-assistant-attachment>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lake-assistant-attachment img{width:30px;height:30px;object-fit:cover;border-radius:5px}
+.lake-workbench-view .lake-assistant-attachment button{border:0;background:transparent;padding:0 4px;min-height:20px;height:20px;box-shadow:none}
+.lake-assistant-message-files{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;max-width:100%}.lake-assistant-message-files img{width:120px;max-height:100px;object-fit:contain;border-radius:9px}.lake-assistant-message-files small{overflow-wrap:anywhere;max-width:100%}
+.lake-workbench-view .lake-assistant-window.is-file-drag{outline:2px dashed #b8e7f6;outline-offset:-8px}
+@container lakeassistant (max-width:580px){.lake-assistant-window .lake-assistant-state{display:none}.lake-assistant-quota{min-width:130px}.lake-assistant-quota-chip{min-width:48px}.lake-assistant-quota-chip small{font-size:9px}}
+@container lakeassistant (max-width:380px){.lake-assistant-bottom-bar{flex-wrap:wrap}.lake-assistant-bottom-bar .lake-wechat-compose-foot{margin-left:auto}.lake-assistant-bottom-bar .lake-assistant-composer-options{flex-basis:100%}.lake-assistant-quota{order:5;flex-basis:100%;justify-content:flex-start}}
+
+/* Wiki card colors */
+.lake-wiki-dialog .lake-task-color-tools{display:flex;flex-direction:column;gap:8px}.lake-wiki-dialog .lake-task-color-palette{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.lake-wiki-dialog .lake-task-color-swatch{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:5px 9px!important}.lake-wiki-dialog .lake-task-color-swatch[aria-pressed=true]{outline:1px solid #d0ecf0;outline-offset:1px}.lake-wiki-dialog .lake-task-color-dot{display:inline-block;width:11px;height:11px;border-radius:50%;flex:none}.lake-wiki-dialog .lake-task-color-custom{display:flex;gap:7px;align-items:center;font-size:12px}.lake-wiki-dialog .lake-task-color-custom input{width:34px;height:28px;padding:2px;background:transparent;border:1px solid #acd7df50;border-radius:7px}.lake-wiki-dialog .lake-task-color-status{font-size:12px;color:#b2ccd4}
+.lake-workbench-view .lake-wiki-card.has-wiki-color{border-left:3px solid var(--lake-wiki-color)!important;background:linear-gradient(110deg,color-mix(in srgb,var(--lake-wiki-color) 15%,transparent),rgba(5,30,42,.08))!important}
+/* Apex original sections embedded in Wiki */
+.lake-wiki-apex{position:relative;min-height:0;margin-top:24px;width:100%;flex:none}.lake-wiki-apex-view{height:auto!important;min-height:0!important;overflow:visible!important}.lake-wiki-apex-view>.view-header{display:none!important}.lake-wiki-apex-view>.view-content{height:auto!important;overflow:visible!important;padding:0!important}.lake-wiki-apex .dashboard-kanban-wrapper{height:auto!important;overflow:visible!important}.lake-wiki-apex .dashboard-kanban{min-height:0;max-width:100%;overflow:visible!important}.lake-wiki-apex .apex-dashboard-root{height:auto!important;min-height:0!important;background:transparent!important}.lake-wiki-board:has(.lake-wiki-apex){overflow:auto}
+.lake-workbench-view .lake-panel:has(>.lake-wiki-board .lake-wiki-apex){height:calc(100% - 92px)}
+.lake-workbench-view .lake-wiki-board:has(.lake-wiki-apex){overflow:auto!important}
+.lake-workbench-view .lake-wiki-board:has(.lake-wiki-apex) .lake-wiki-canvas{flex:0 0 auto}
+.lake-panel:has(>.lake-wiki-board .lake-wiki-apex)>.lake-panel-head{flex-wrap:wrap;min-height:48px;height:auto}
+.lake-panel:has(>.lake-wiki-board .lake-wiki-apex)>.lake-panel-head>.lake-panel-actions{flex-wrap:wrap}

@@ -10,3 +10,13 @@
 *.log
 node_modules/
 # These tracked files are sanitized initial configurations; retain local copies on upgrades.
+
+# Local assistant / WeChat state, credentials, and attachment caches
+*.enc
+*.enc.pending
+.env
+.env.*
+assistant-attachments*/
+/lingxi/workbench-before-*
+/lingxi/data.json
+/lingxi/douban-data.json

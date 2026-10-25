@@ -151,3 +151,12 @@
 @media(max-width:520px){.lake-taskboard-modal .modal.lake-task-record-dialog{padding:14px}.lake-record-entry{padding-left:12px}.lake-record-trace dl{grid-template-columns:minmax(0,1fr)}}
 
 .lake-record-history-tools select{min-height:34px!important;height:auto!important;line-height:1.5!important;padding:6px 24px 6px 8px!important;box-sizing:border-box}.lake-record-aside a{color:#bcecf2;text-underline-offset:3px}
+
+/* Task description AI writing: preview first, never auto-save. */
+.lake-task-ai-tools{display:flex;flex-direction:column;gap:8px;min-width:0}.lake-task-ai-actions{display:flex;flex-wrap:wrap;gap:8px}.lake-task-ai-status{color:#b8d5df;font-size:12px;line-height:1.6}.lake-task-ai-preview{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid #a4d4df40;border-radius:12px;background:#09323b12;min-width:0}.lake-task-ai-preview[hidden],.lake-task-ai-tools button[hidden]{display:none!important}.lake-task-ai-original{white-space:pre-wrap;overflow-wrap:anywhere;max-height:140px;overflow:auto;margin:0;padding:8px;background:transparent;border:1px solid #a4d4df20;border-radius:8px;font-size:13px}.lake-task-ai-preview textarea{width:100%;min-height:160px;resize:vertical;line-height:1.7}.lake-task-ai-tools .lake-btn{min-height:34px;padding:6px 12px}
+
+.lake-task-ai-delivery[hidden]{display:none!important}.lake-task-ai-delivery{display:flex;flex-direction:column;gap:8px}
+
+/* Optional per-task colors, transparent and independent of task state. */
+.lake-task-color-tools{display:flex;flex-direction:column;gap:8px}.lake-task-color-palette{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.lake-task-color-swatch{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:5px 9px!important}.lake-task-color-swatch[aria-pressed=true]{outline:1px solid #d0ecf0;outline-offset:1px}.lake-task-color-dot{display:inline-block;width:11px;height:11px;border-radius:50%;flex:none}.lake-task-color-custom{display:flex;gap:7px;align-items:center;font-size:12px}.lake-task-color-custom input{width:34px;height:28px;padding:2px;background:transparent;border:1px solid #acd7df50;border-radius:7px}.lake-task-color-status{font-size:12px;color:#b2ccd4}
+.lake-workbench-view .lake-taskboard .lake-taskboard-card.has-task-color{border-left:3px solid var(--lake-task-color)!important;background:linear-gradient(110deg,color-mix(in srgb,var(--lake-task-color) 15%,transparent),rgba(5,30,42,.08))!important}

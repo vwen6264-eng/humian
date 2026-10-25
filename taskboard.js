@@ -92,6 +92,13 @@ async function render(view,api){
   const title=formField(form,'任务标题','title',task?.title||'');title.required=true;title.maxLength=240;title.closest('label').classList.add('is-wide');
   const description=formField(form,'要做什么','description',task?.description||'','textarea');description.closest('label').classList.add('is-wide');
   const project=formField(form,'所属项目','project_id',task?.project_id||state.project_id||projects[0].id,'select',projects.map(p=>[p.id,p.name]));
+  let taskColor=task?.color||'';
+  const colorTools=element(form,'div','lake-task-color-tools is-wide');element(colorTools,'strong','','卡片颜色');
+  const palette=element(colorTools,'div','lake-task-color-palette');const swatches=[];
+  const setColor=value=>{taskColor=value;for(const b of swatches)b.setAttribute('aria-pressed',String(b.dataset.color===value));colorStatus.textContent=value?'当前颜色：'+value:'不设颜色，使用湖面默认样式';};
+  for(const [value,name]of [['','不设颜色'],['#79a9ff','湖蓝'],['#8bd9c7','薄荷'],['#b39ddb','浅紫'],['#e8a5bd','藕粉'],['#e6bd78','暖金'],['#df9c80','陶橙'],['#9cabb8','雾灰']]){const b=button(palette,name,()=>setColor(value),'lake-btn lake-task-color-swatch');b.dataset.color=value;if(value){const dot=element(b,'span','lake-task-color-dot');dot.style.backgroundColor=value;b.prepend(dot);}swatches.push(b);}
+  const customLabel=element(palette,'label','lake-task-color-custom','自选颜色');const custom=element(customLabel,'input');custom.type='color';custom.value=taskColor||'#79a9ff';custom.setAttribute('aria-label','自选任务卡片颜色');custom.oninput=()=>setColor(custom.value);
+  const colorStatus=element(colorTools,'small','lake-task-color-status');setColor(taskColor);
   const priority=formField(form,'优先级','priority',task?.priority||'medium','select',Object.entries(core.PRIORITIES));
   const owner=formField(form,'负责人（空着表示暂未分配）','assignee',task?.assignee||'');
   const due=formField(form,'截止日期','due_date',task?.due_date||'');due.type='date';
@@ -99,9 +106,10 @@ async function render(view,api){
   const statusField=!task?formField(form,'开始方式','status','backlog','select',[['backlog','先放待规划，不执行'],['todo','放入待办，允许领取']]):null;
   const selectedSkills=skillPicker(form,task?.skills||[]);
   const acceptance=formField(form,'怎样才算做好（每行一条验收条件）','acceptance',task?.acceptance.join('\n')||'','textarea');acceptance.required=true;acceptance.closest('label').classList.add('is-wide');
+  require('./taskboard-ai.js').attach({app,modal:m,form,title,description,acceptance,project,projects});
   if(task?.claim)element(form,'p','is-wide','任务已被领取。更换负责人会释放原领取，并退回待办。');
   const error=element(form,'p','lake-taskboard-form-error is-wide');error.setAttribute('role','alert');const foot=element(form,'div','lake-taskboard-form-footer');button(foot,'先不改了',()=>m.close());const save=button(foot,task?'保存修改':'创建任务',()=>{});save.type='submit';
-  form.onsubmit=async e=>{e.preventDefault();save.disabled=true;try{const patch={skills:selectedSkills.value(),title:title.value,description:description.value,project_id:project.value,priority:priority.value,assignee:owner.value.trim(),due_date:due.value,task_tags:tags.value.split(/[,，]/).map(x=>x.trim()).filter(Boolean),acceptance:acceptance.value.split('\n').map(x=>x.trim()).filter(Boolean)};if(task)await store.update({id:task.id,version:task.version,etag:task.etag,patch},USER,true);else await store.create('task',{...patch,status:statusField.value},USER,true);m.close();await draw();}catch(e){error.textContent=e.message;save.disabled=false;}};
+  form.onsubmit=async e=>{e.preventDefault();save.disabled=true;try{const patch={color:taskColor,skills:selectedSkills.value(),title:title.value,description:description.value,project_id:project.value,priority:priority.value,assignee:owner.value.trim(),due_date:due.value,task_tags:tags.value.split(/[,，]/).map(x=>x.trim()).filter(Boolean),acceptance:acceptance.value.split('\n').map(x=>x.trim()).filter(Boolean)};if(task)await store.update({id:task.id,version:task.version,etag:task.etag,patch},USER,true);else await store.create('task',{...patch,status:statusField.value},USER,true);m.close();await draw();}catch(e){error.textContent=e.message;save.disabled=false;}};
   m.open();title.focus();
  }
  async function reviewForm(task){
@@ -129,7 +137,7 @@ async function render(view,api){
    for(const status of state.status?[state.status]:core.STATES){const column=element(board,'section','lake-taskboard-column');column.dataset.status=status;const head=element(column,'header','lake-taskboard-column-head');element(head,'h3','',core.LABELS[status]);const items=shown.filter(x=>x.status===status);element(head,'span','lake-taskboard-count',String(items.length));
     column.ondragover=e=>{if(e.dataTransfer.types.includes('application/x-lake-task')){e.preventDefault();e.dataTransfer.dropEffect='move';column.classList.add('is-drop-target');}};column.ondragleave=e=>{if(!column.contains(e.relatedTarget))column.classList.remove('is-drop-target');};column.ondrop=e=>{e.preventDefault();column.classList.remove('is-drop-target');try{const data=JSON.parse(e.dataTransfer.getData('application/x-lake-task'));moveTask(data,status).catch(message);}catch{new api.Notice('这张卡片无法移动，请刷新后重试。');}};
     const list=element(column,'div','lake-taskboard-card-list');if(!items.length)element(list,'p','lake-taskboard-empty',status==='backlog'?'先放想法，不会自动执行':status==='in_review'?'提交完成的工作会在这里等你':'把任务拖到这里');
-    for(const task of items){const card=element(list,'article','lake-taskboard-card');card.dataset.taskId=task.id;card.dataset.version=String(task.version);card.draggable=true;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label',task.title+'，点击打开任务笔记');card.onclick=e=>{if(!e.target.closest('button,a,input,select,textarea,label'))openNote(task.path);};card.onkeydown=e=>{if(e.target===card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openNote(task.path);}};
+    for(const task of items){const card=element(list,'article','lake-taskboard-card');card.dataset.taskId=task.id;if(/^#[0-9a-f]{6}$/i.test(task.color||'')){card.classList.add('has-task-color');card.style.setProperty('--lake-task-color',task.color);card.dataset.color=task.color;}card.dataset.version=String(task.version);card.draggable=true;card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label',task.title+'，点击打开任务笔记');card.onclick=e=>{if(!e.target.closest('button,a,input,select,textarea,label'))openNote(task.path);};card.onkeydown=e=>{if(e.target===card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openNote(task.path);}};
      card.title='按住拖动到状态列；单击打开任务笔记';
      card.ondragstart=e=>{if(e.target.closest('button,a,input,select,textarea')){e.preventDefault();return;}e.dataTransfer.setData('application/x-lake-task',JSON.stringify({id:task.id,version:task.version,etag:task.etag,status:task.status}));e.dataTransfer.effectAllowed='move';card.classList.add('is-task-dragging');};
      card.ondragend=()=>card.classList.remove('is-task-dragging');
