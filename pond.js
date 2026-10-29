@@ -2,13 +2,22 @@
 
 const kinds = [['fish', 16, '小鱼'], ['turtle', 5, '乌龟']];
 const personalities = ['悠闲', '活泼', '胆小', '亲人'];
-const species = {fish:['红白锦鲤','黄金锦鲤','兰寿鱼'],turtle:['中华草龟']};
+const species = {fish:['红白锦鲤','黄金锦鲤','兰寿鱼','墨锦狮头金鱼','五花狮头金鱼','红白狮头金鱼','红白长尾金鱼','红白双鱼','粉白游鱼','蓝尾游鱼','墨色长尾鱼','黑白珍珠鳞金鱼'],turtle:['中华草龟','青绿花龟','绿海龟','瓷青花蟹','彩斑海蟹']};
+const spriteFiles={'红白双鱼':'红白双鱼-游动.png','粉白游鱼':'粉白游鱼-游动.png','蓝尾游鱼':'蓝尾游鱼-游动.png','墨色长尾鱼':'墨色长尾鱼-游动.png','黑白珍珠鳞金鱼':'黑白珍珠鳞金鱼-游动.png','青绿花龟':'中华草龟-背视-游动.png','绿海龟':'中华草龟-游姿-游动.png','瓷青花蟹':'瓷青花蟹-游动.png','彩斑海蟹':'彩斑海蟹-游动.png'};
+const photoSpecies=['墨锦狮头金鱼','五花狮头金鱼','红白狮头金鱼','红白长尾金鱼',...Object.keys(spriteFiles)];
 const sizes = ['小','中','大'];
 const patterns = ['斑纹','条纹','单色','原生花纹','品种原生纹理'];
 function todayLocal(){
   const d=new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+function withPondSprites(plugin,html,preview=false){
+  const fs=require('fs'),path=require('path'),base=`${plugin.manifest.dir}/assets/pond-preview`,images={};
+  for(const [name,file] of Object.entries(spriteFiles)){const absolute=path.join(plugin.app.vault.adapter.getBasePath(),base,file);if(fs.existsSync(absolute))images[name]=plugin.app.vault.adapter.getResourcePath(`${base}/${file}`);}
+  const code=fs.readFileSync(path.join(plugin.app.vault.adapter.getBasePath(),base,'pond-sprites.js'),'utf8');
+  return html.replace('</body>',`<script>window.lakePondSprites=${JSON.stringify(images)};window.lakePondSpritePreview=${preview};</script><script>${code}</script></body>`);
+}
+function previewHtml(plugin){const path=require('path'),fs=require('fs'),dir=path.join(plugin.app.vault.adapter.getBasePath(),plugin.manifest.dir,'assets/pond-preview');return withPondSprites(plugin,fs.readFileSync(path.join(dir,'pond-preview.html'),'utf8'),true);}
 function identityOf(x){return JSON.stringify([x.kind,x.slot,x.species,x.birthdate,x.size,x.appearance,x.personality]);}
 function initial() {
   return {version: 2, creatures: [['fish',10,'小鱼'],['turtle',3,'乌龟']].flatMap(([kind,count,label]) =>
@@ -69,7 +78,7 @@ function validate(value) {
 function addCreature(state,kind,details={}){
   const max=kind==='fish'?16:5;
   const slot=Array.from({length:max},(_,i)=>i).find(i=>!state.creatures.some(x=>x.kind===kind&&x.slot===i));
-  if(slot===undefined)throw new Error(kind==='fish'?'鱼已达到 16 条上限。':'乌龟已达到 5 只上限。');
+  if(slot===undefined)throw new Error(kind==='fish'?'鱼已达到 16 条上限。':'龟与蟹共用的 5 个位置已满。');
   const x={id:kind+'-'+crypto.randomUUID(),kind,slot,name:details.name??(kind==='fish'?'新鱼':'新乌龟'),
     inLake:true,species:details.species??species[kind][kind==='fish'?slot%2:0],birthdate:todayLocal(),size:details.size??'中',
     appearance:{bodyColor:details.bodyColor??details.color??(kind==='fish'?'#e89a55':'#799667'),
@@ -100,9 +109,7 @@ function assertLifeTransition(before,clean){
   for(const x of clean.creatures)if(!before.creatures.some(y=>y.id===x.id)&&x.birthdate!==todayLocal())
     throw new Error('新生命的出生日期只能是今天。');
 }
-function attach(view, Modal, api) {
-  const plugin = view.plugin;
-  if (!plugin.pondStore) {
+function createStore(plugin){
     const file = `${plugin.manifest.dir}/pond.json`;
     let queue = Promise.resolve();
     const read = async () => validate(await plugin.app.vault.adapter.exists(file) ? JSON.parse(await plugin.app.vault.adapter.read(file)) : initial());
@@ -110,7 +117,7 @@ function attach(view, Modal, api) {
       const frame = leaf.view.containerEl.querySelector('iframe.lake-wallpaper');
       frame?.contentWindow?.postMessage({type: 'lake-pond-state', state: value}, '*');
     });
-    plugin.pondStore = {read, sync, remove(id){
+    return {schemaVersion:3,read, sync, remove(id){
       const job=queue.then(async()=>{const clean=removeCreature(await read(),id);await plugin.app.vault.adapter.write(file,JSON.stringify(clean,null,2));sync(clean);return clean;});queue=job.catch(()=>{});return job;
     }, save(value, backup = false) {
       const clean = validate(value);
@@ -128,24 +135,108 @@ function attach(view, Modal, api) {
       queue = job.catch(() => {});
       return job;
     }};
-  }
+  
+}
+function createBirthEditor(view,Modal){const plugin=view.plugin,store=plugin.pondStore;return function(kind){
+      const modal=new Modal(plugin.app);
+      modal.titleEl.textContent=kind==='fish'?'迎接一条新鱼':'迎接一只龟或蟹（共用 5 个位置）';
+      modal.containerEl.addClass('lake-pond-birth-modal');
+      modal.modalEl.addClass('lake-pond-birth-modal-inner');
+      const form=document.createElement('form');form.className='lake-pond-birth';modal.contentEl.append(form);
+      const note=document.createElement('p');note.textContent=`今天是 ${todayLocal()}，也是这位新伙伴的生日。`;
+      form.append(note);
+      const field=(label,tag,options)=>{
+        const row=document.createElement('label');row.textContent=label;form.append(row);
+        const input=document.createElement(tag);row.append(input);
+        for(const value of options||[]){const option=document.createElement('option');option.value=value;option.textContent=value;input.append(option);}
+        return input;
+      };
+      const name=field('名字','input');name.required=true;name.maxLength=24;name.placeholder=kind==='fish'?'给这条鱼起名字':'给这只龟或蟹起名字';
+      const type=field('品种','select',species[kind]);if(kind==='fish')window.postMessage({type:'lake-pond-birth-refresh'},'*');
+      const palette=(label,colors)=>{
+        const input=field(label,'select',[]);
+        for(const [text,value] of colors){const option=document.createElement('option');option.textContent=text;option.value=value;input.append(option);}
+        return input;
+      };
+      const bodyColor=kind==='fish'?palette('身体的颜色',[
+        ['橙金','#e8a14b'],['朱红','#be422f'],['金黄','#d6ad53'],['乳白','#e5ddc8']]):
+        palette('背甲色',[['橄榄棕','#6d7050'],['深褐','#65513e'],['灰褐','#6a6456']]);
+      const patternColor=kind==='fish'?palette('身上花纹的颜色',[
+        ['乳白','#e7dec8'],['朱红','#be422f'],['墨黑','#37382f'],['橙金','#d69a4d']]):
+        palette('头颈和四肢的颜色',[['橄榄灰','#777965'],['灰褐','#78705a'],['深棕','#5e5946']]);
+      const visual=document.createElement('div');visual.className='lake-pond-photo-choice';form.append(visual);
+      const pattern={value:kind==='fish'?'原生花纹':'品种原生纹理'};
+      const patternNote=document.createElement('p');
+      patternNote.textContent=kind==='fish'?'花纹来自当前品种素材本身；没有条纹素材的品种不提供条纹。':'保留品种原生甲纹、头颈纹和鳞片；不提供斑纹或条纹生成选项。';
+      form.append(patternNote);
+      const size=field('大小','select',sizes);size.value='中';
+      const personality=field('天生的性格','select',personalities);
+
+      const preview=document.createElement('div');preview.className='lake-pond-live lake-pond-birth-live';form.append(preview);
+      const previewFrame=document.createElement('iframe');previewFrame.className='lake-pond-three lake-pond-birth-three';
+      previewFrame.title='定制生物高清真实游动预览';preview.append(previewFrame);
+      const caption=document.createElement('small');caption.textContent='小伙伴正游过来，请稍等一下…';preview.append(caption);
+      previewFrame.srcdoc=previewHtml(plugin);
+      const freeSlot=Array.from({length:kind==='fish'?16:5},(_,i)=>i).find(i=>!this.state.creatures.some(x=>x.kind===kind&&x.slot===i));
+      if(freeSlot===undefined){modal.close();this.statusEl.textContent=kind==='fish'?'鱼已达到 16 条上限':'龟与蟹共用的 5 个位置已满';return;}
+      const draftId=`${kind}-draft`;
+      const setVisual=()=>{visual.replaceChildren();};
+      const sendDraft=()=>{
+        setVisual();caption.textContent=photoSpecies.includes(type.value)?'游动外观预览 · 创建后加入湖中':'原生纹理分区调色 · 保留鳞片、甲纹与眼睛细节';
+        previewFrame.contentWindow?.postMessage({type:'pond-pose',id:draftId,x:.5,y:.5,angle:0,active:true,
+          creature:{id:draftId,kind,slot:freeSlot,species:type.value,size:size.value,personality:personality.value,
+            appearance:{bodyColor:bodyColor.value,patternColor:patternColor.value,pattern:pattern.value,material:'natural-v1'}}},'*');
+      };
+      this.birthModal={frame:previewFrame,caption,sendDraft};
+      const presets=document.createElement('div');presets.className='lake-pond-toolbar';
+      const presetValues=kind==='fish'?[['红白','#e5ddc8','#be422f'],['橙白','#e8a14b','#e7dec8'],['金墨','#d6ad53','#37382f']]:[['橄榄','#6d7050','#777965'],['深褐','#65513e','#5e5946'],['灰褐','#6a6456','#78705a']];
+      for(const [label,body,mark] of presetValues){const b=document.createElement('button');b.type='button';b.textContent=label+'预设';b.className='lake-btn';b.onclick=()=>{bodyColor.value=body;patternColor.value=mark;sendDraft();};presets.append(b);}
+      form.insertBefore(presets,preview);
+      const update=()=>{const photo=photoSpecies.includes(type.value);bodyColor.disabled=patternColor.disabled=photo;presets.hidden=photo;patternNote.textContent=Object.hasOwn(spriteFiles,type.value)?'预览与湖中使用同一生物外观，沿用湖中的游动与交互规则。':photo?'保留当前品种的原生纹理。':'保留当前品种的原生花纹，可选择身体和花纹颜色。';sendDraft();};
+      for(const input of [type,bodyColor,patternColor,size,personality])input.addEventListener('input',update);
+
+      const oldClose=modal.onClose.bind(modal);
+      modal.onClose=()=>{modal.modalEl._lakeMoveCleanup?.();previewFrame.contentWindow?.postMessage({type:'pond-pose',id:draftId,x:.5,y:.5,angle:0,active:false,
+        creature:{id:draftId,kind,slot:freeSlot,species:type.value,size:size.value,personality:personality.value,
+          appearance:{bodyColor:bodyColor.value,patternColor:patternColor.value,pattern:pattern.value,material:'natural-v1'}}},'*');
+        if(this.birthModal?.frame===previewFrame)this.birthModal=null;oldClose();};
+      const submit=document.createElement('button');submit.type='submit';submit.className='mod-cta';submit.textContent='就叫这个名字，来湖里吧';form.append(submit);
+      form.onsubmit=async e=>{
+        e.preventDefault();submit.disabled=true;
+        try{
+          const fresh=await store.read();
+          const x=addCreature(fresh,kind,{name:name.value,species:type.value,bodyColor:bodyColor.value,patternColor:patternColor.value,
+            pattern:pattern.value,material:'natural-v1',size:size.value,personality:personality.value});
+          this.state=await store.save(fresh);this.selectedId=x.id;modal.close();this.draw();
+        }catch(err){submit.disabled=false;this.statusEl.textContent=err.message;}
+      };
+      modal.open();const birthHead=modal.titleEl.closest('.modal-header')||modal.titleEl;view.pondPlay.makeWindow(modal.modalEl,birthHead,modal.containerEl);name.focus();
+    
+};}
+function attach(view, Modal, api) {
+  const plugin = view.plugin;
+  if(!plugin.pondStore||plugin.pondStore.schemaVersion!==3)plugin.pondStore=createStore(plugin);
   const store = plugin.pondStore;
   let lastLakeSelect = {id:null, at:0};
-  const frame = view.containerEl.querySelector('iframe.lake-wallpaper');
+  const getFrame = () => view.containerEl.querySelector('iframe.lake-wallpaper');
+  const initialFrame = getFrame();
   const push = () => store.read().then(value => {
     store.sync(value);
     const current = view.pondModal?.state?.creatures.find(x => x.id === view.pondModal.selectedId);
-    if(current?.inLake) frame?.contentWindow?.postMessage({type:'lake-pond-preview-start',id:current.id},'*');
-  }).catch(e => view.toast(`池塘数据读取失败：${e.message}`, 'error'));
-  view.registerDomEvent(frame, 'load', push);
+    if(current?.inLake) getFrame()?.contentWindow?.postMessage({type:'lake-pond-preview-start',id:current.id},'*');
+  }).catch(e => view.toast(`\u6c60\u5858\u6570\u636e\u8bfb\u53d6\u5931\u8d25\uff1a${e.message}`, 'error'));
+  view.registerDomEvent(initialFrame, 'load', push);
   view.registerDomEvent(window, 'message', e => {
     const birth=view.pondModal?.birthModal;
     if(birth&&e.source===birth.frame.contentWindow){
       if(e.data?.type==='pond-preview-ready'){birth.caption.textContent='原生纹理分区调色 · 保留鳞片、甲纹与眼睛细节';birth.sendDraft();}
+      if(e.data?.type==='lake-pond-sprite-ready')birth.sendDraft();
+      if(e.data?.type==='lake-pond-sprite-error')birth.caption.textContent='生物外观加载失败，已回退原生模型';
       if(e.data?.type==='pond-preview-error')birth.caption.textContent='真实鱼预览暂不可用';
       return;
     }
     const previewFrame = view.pondModal?.contentEl.querySelector('iframe.lake-pond-three');
+    if(e.source===previewFrame?.contentWindow&&e.data?.type==='lake-pond-sprite-ready'){view.pondModal.sendPose();return;}
     if (e.source === previewFrame?.contentWindow && e.data?.type === 'pond-preview-error') {
       const caption = view.pondModal.contentEl.querySelector('.lake-pond-live small');
       if (caption) caption.textContent = 'Three.js 高清预览暂不可用；外观档案不受影响';
@@ -155,7 +246,7 @@ function attach(view, Modal, api) {
       view.pondModal.sendPose();
       return;
     }
-    if (e.source !== frame.contentWindow) return;
+    if (e.source !== getFrame()?.contentWindow) return;
     if (e.data?.type === 'lake-pond-ready') push();
     if (e.data?.type === 'lake-pond-applied') {store.lastAppliedCount = e.data.count;store.lastActiveCount = e.data.active;}
     if (e.data?.type === 'lake-pond-pose' && e.data.id === view.pondModal?.selectedId &&
@@ -181,7 +272,7 @@ function attach(view, Modal, api) {
       this.removalObserver = new MutationObserver(() => {if (!this.containerEl.isConnected && view.pondModal === this) this.close();});
       this.removalObserver.observe(host, {childList:true}); this.onOpen();
     }
-    close() {clearTimeout(this.nameClickTimer);this.containerEl?._lakeMoveCleanup?.();this.removalObserver?.disconnect();this.containerEl?.remove(); view.pondModal = null; frame?.contentWindow?.postMessage({type:'lake-pond-preview-stop'},'*'); if(this.opener?.isConnected)this.opener.focus();}
+    close() {clearTimeout(this.nameClickTimer);this.containerEl?._lakeMoveCleanup?.();this.removalObserver?.disconnect();this.containerEl?.remove(); view.pondModal = null; getFrame()?.contentWindow?.postMessage({type:'lake-pond-preview-stop'},'*'); if(this.opener?.isConnected)this.opener.focus();}
     async onOpen() {
       this.titleEl.textContent = '湖中生物 · 小伙伴的故事';
       this.contentEl.classList.add('lake-pond-card');
@@ -189,78 +280,7 @@ function attach(view, Modal, api) {
       try {this.state = await store.read(); this.draw();}
       catch (e) {this.contentEl.textContent = `读取失败，未覆盖原数据：${e.message}`;}
     }
-    openBirthModal(kind) {
-      const modal=new Modal(plugin.app);
-      modal.titleEl.textContent=kind==='fish'?'迎接一条新鱼':'迎接一只小乌龟';
-      modal.containerEl.addClass('lake-pond-birth-modal');
-      modal.modalEl.addClass('lake-pond-birth-modal-inner');
-      const form=document.createElement('form');form.className='lake-pond-birth';modal.contentEl.append(form);
-      const note=document.createElement('p');note.textContent=`今天是 ${todayLocal()}，也是这位新伙伴的生日。`;
-      form.append(note);
-      const field=(label,tag,options)=>{
-        const row=document.createElement('label');row.textContent=label;form.append(row);
-        const input=document.createElement(tag);row.append(input);
-        for(const value of options||[]){const option=document.createElement('option');option.value=value;option.textContent=value;input.append(option);}
-        return input;
-      };
-      const name=field('名字','input');name.required=true;name.maxLength=24;name.placeholder=kind==='fish'?'给这条鱼起名字':'给这只乌龟起名字';
-      const type=field('品种','select',species[kind]);
-      const palette=(label,colors)=>{
-        const input=field(label,'select',[]);
-        for(const [text,value] of colors){const option=document.createElement('option');option.textContent=text;option.value=value;input.append(option);}
-        return input;
-      };
-      const bodyColor=kind==='fish'?palette('身体的颜色',[
-        ['橙金','#e8a14b'],['朱红','#be422f'],['金黄','#d6ad53'],['乳白','#e5ddc8']]):
-        palette('背甲色',[['橄榄棕','#6d7050'],['深褐','#65513e'],['灰褐','#6a6456']]);
-      const patternColor=kind==='fish'?palette('身上花纹的颜色',[
-        ['乳白','#e7dec8'],['朱红','#be422f'],['墨黑','#37382f'],['橙金','#d69a4d']]):
-        palette('头颈和四肢的颜色',[['橄榄灰','#777965'],['灰褐','#78705a'],['深棕','#5e5946']]);
-      const pattern={value:kind==='fish'?'原生花纹':'品种原生纹理'};
-      const patternNote=document.createElement('p');
-      patternNote.textContent=kind==='fish'?'花纹来自当前品种素材本身；没有条纹素材的品种不提供条纹。':'保留品种原生甲纹、头颈纹和鳞片；不提供斑纹或条纹生成选项。';
-      form.append(patternNote);
-      const size=field('大小','select',sizes);size.value='中';
-      const personality=field('天生的性格','select',personalities);
-
-      const preview=document.createElement('div');preview.className='lake-pond-live lake-pond-birth-live';form.append(preview);
-      const previewFrame=document.createElement('iframe');previewFrame.className='lake-pond-three lake-pond-birth-three';
-      previewFrame.title='定制生物高清真实游动预览';preview.append(previewFrame);
-      const caption=document.createElement('small');caption.textContent='小伙伴正游过来，请稍等一下…';preview.append(caption);
-      previewFrame.src=plugin.app.vault.adapter.getResourcePath(`${plugin.manifest.dir}/assets/pond-preview/pond-preview.html`);
-      const freeSlot=Array.from({length:kind==='fish'?16:5},(_,i)=>i).find(i=>!this.state.creatures.some(x=>x.kind===kind&&x.slot===i));
-      if(freeSlot===undefined){modal.close();this.statusEl.textContent=kind==='fish'?'鱼已达到 16 条上限':'乌龟已达到 5 只上限';return;}
-      const draftId=`${kind}-draft`;
-      const sendDraft=()=>{
-        previewFrame.contentWindow?.postMessage({type:'pond-pose',id:draftId,x:.5,y:.5,angle:0,active:true,
-          creature:{id:draftId,kind,slot:freeSlot,species:type.value,size:size.value,personality:personality.value,
-            appearance:{bodyColor:bodyColor.value,patternColor:patternColor.value,pattern:pattern.value,material:'natural-v1'}}},'*');
-      };
-      this.birthModal={frame:previewFrame,caption,sendDraft};
-      const presets=document.createElement('div');presets.className='lake-pond-toolbar';
-      const presetValues=kind==='fish'?[['红白','#e5ddc8','#be422f'],['橙白','#e8a14b','#e7dec8'],['金墨','#d6ad53','#37382f']]:[['橄榄','#6d7050','#777965'],['深褐','#65513e','#5e5946'],['灰褐','#6a6456','#78705a']];
-      for(const [label,body,mark] of presetValues){const b=document.createElement('button');b.type='button';b.textContent=label+'预设';b.className='lake-btn';b.onclick=()=>{bodyColor.value=body;patternColor.value=mark;sendDraft();};presets.append(b);}
-      form.insertBefore(presets,preview);
-      const update=()=>{sendDraft();};
-      for(const input of [type,bodyColor,patternColor,size,personality])input.addEventListener('input',update);
-
-      const oldClose=modal.onClose.bind(modal);
-      modal.onClose=()=>{modal.modalEl._lakeMoveCleanup?.();previewFrame.contentWindow?.postMessage({type:'pond-pose',id:draftId,x:.5,y:.5,angle:0,active:false,
-        creature:{id:draftId,kind,slot:freeSlot,species:type.value,size:size.value,personality:personality.value,
-          appearance:{bodyColor:bodyColor.value,patternColor:patternColor.value,pattern:pattern.value,material:'natural-v1'}}},'*');
-        if(this.birthModal?.frame===previewFrame)this.birthModal=null;oldClose();};
-      const submit=document.createElement('button');submit.type='submit';submit.className='mod-cta';submit.textContent='就叫这个名字，来湖里吧';form.append(submit);
-      form.onsubmit=async e=>{
-        e.preventDefault();submit.disabled=true;
-        try{
-          const fresh=await store.read();
-          const x=addCreature(fresh,kind,{name:name.value,species:type.value,bodyColor:bodyColor.value,patternColor:patternColor.value,
-            pattern:pattern.value,material:'natural-v1',size:size.value,personality:personality.value});
-          this.state=await store.save(fresh);this.selectedId=x.id;modal.close();this.draw();
-        }catch(err){submit.disabled=false;this.statusEl.textContent=err.message;}
-      };
-      modal.open();const birthHead=modal.titleEl.closest('.modal-header')||modal.titleEl;view.pondPlay.makeWindow(modal.modalEl,birthHead,modal.containerEl);name.focus();
-    }
+    openBirthModal(kind){return createBirthEditor(view,Modal).call(this,kind);}
     sendPose(override) {
       const selected=this.state?.creatures.find(x=>x.id===this.selectedId);
       const previewFrame=this.contentEl.querySelector('iframe.lake-pond-three');
@@ -278,7 +298,7 @@ function attach(view, Modal, api) {
         el(root, 'small', store.lastAppliedCount ? '湖面连接：'+store.lastAppliedCount+' 个生物槽位已绑定' : '湖面连接：等待动画载入；不影响档案保存');
         const toolbar = el(root, 'div'); toolbar.className = 'lake-pond-toolbar';
         for(const kind of ['fish','turtle']){
-          const add=el(toolbar,'button',kind==='fish'?'＋迎接新鱼':'＋迎接小乌龟');
+          const add=el(toolbar,'button',kind==='fish'?'＋迎接新鱼':'＋迎接龟或蟹');
           add.onclick=()=>this.openBirthModal(kind);
         }
         const status = el(root, 'p'); status.setAttribute('role', 'status'); this.statusEl = status;
@@ -309,7 +329,7 @@ function attach(view, Modal, api) {
         this.detailEl = el(body, 'form'); this.detailEl.className = 'lake-pond-detail';
         this.liveEl = el(this.detailEl, 'div'); this.liveEl.className = 'lake-pond-live';
         const liveFrame = el(this.liveEl, 'iframe'); liveFrame.className = 'lake-pond-three';
-        liveFrame.src = plugin.app.vault.adapter.getResourcePath(`${plugin.manifest.dir}/assets/pond-preview/pond-preview.html`);
+        liveFrame.srcdoc = previewHtml(plugin);
         el(this.liveEl, 'small');
       }
       const status = this.statusEl, list = this.listEl, detail = this.detailEl;
@@ -319,7 +339,7 @@ function attach(view, Modal, api) {
       this.selectedId = selected?.id;
       for (const x of this.state.creatures) {
         const row=el(list,'div');row.className='lake-pond-row';
-        const b=el(row,'button',`${x.kind==='fish'?'🐟':'🐢'} ${x.name}${x.inLake?' · 湖中':' · 休息'}`);
+        const b=el(row,'button',`${x.kind==='fish'?'🐟':x.species?.endsWith('蟹')?'🦀':'🐢'} ${x.name}${x.inLake?' · 湖中':' · 休息'}`);
         b.type='button';b.setAttribute('aria-pressed',String(x.id===this.selectedId));
         b.title=`单击看看${x.name}；双击让${x.name}${x.inLake?'休息一下':'游回湖中'}`;
         b.onclick=()=>{clearTimeout(this.nameClickTimer);this.nameClickTimer=setTimeout(()=>{this.selectedId=x.id;this.draw();},260);};
@@ -344,7 +364,7 @@ function attach(view, Modal, api) {
       liveFrame.title = `${selected.name}的 Three.js 高清游动预览`;
       live.querySelector('small').textContent = '';
       this.sendPose();
-      frame?.contentWindow?.postMessage(selected.inLake ? {type:'lake-pond-preview-start',id:selected.id} : {type:'lake-pond-preview-stop'},'*');
+      getFrame()?.contentWindow?.postMessage(selected.inLake ? {type:'lake-pond-preview-start',id:selected.id} : {type:'lake-pond-preview-stop'},'*');
       const field = (label, tag, value, options) => {
         const wrap = el(detail, 'label', label); const input = el(wrap, tag);
         if (options) options.forEach(text => {const option = el(input, 'option', text); option.value = text;});
@@ -386,10 +406,16 @@ function attach(view, Modal, api) {
   view.pondPlay=require(playPath).attach(view,{store,openCard,api,openBirth:async kind=>{openCard();const card=view.pondModal;if(!card.state)card.state=await store.read();card.openBirthModal(kind);}});
   view.register(() => view.pondModal?.close());
   const original = view.openSection.bind(view);
-  view.openSection = async id => {entry.hidden = id !== 'home';if(id!=='home')view.pondModal?.close();return original(id);};
+  view.openSection = async id => {
+    entry.hidden = id !== 'home';
+    if(id!=='home')view.pondModal?.close();
+    const result=await original(id);
+    if(id==='home')requestAnimationFrame(()=>requestAnimationFrame(()=>{void store.read().then(store.sync).catch(e=>view.toast(`池塘数据同步失败：${e.message}`,'error'));}));
+    return result;
+  };
 }
 
-module.exports = {attach, initial, validate, addCreature, removeCreature, assertLifeTransition};
+module.exports = {attach, initial, validate, addCreature, removeCreature, assertLifeTransition,createStore,createBirthEditor,withPondSprites};
 
 // Run with Node: node pond.js --self-test (does not touch plugin data).
 if(require.main===module&&process.argv.includes('--self-test')){

@@ -143,12 +143,13 @@ class LakeView extends ItemView {
   }
   renderShell(){
     const host=this.containerEl.children[1]; host.empty(); host.addClass('lake-workbench-view');
-    const frame=el(host,'iframe','lake-wallpaper'); frame.setAttribute('allow','autoplay'); frame.setAttribute('title','可交互湖面动态背景'); frame.src=this.app.vault.adapter.getResourcePath(WALLPAPER);
+    const pondPath=path.join(this.app.vault.adapter.getBasePath(),this.plugin.manifest.dir,'pond.js');delete require('module')._cache[pondPath];const pondModule=require(pondPath);
+    const frame=el(host,'iframe','lake-wallpaper'); frame.setAttribute('allow','autoplay'); frame.setAttribute('title','可交互湖面动态背景'); frame.srcdoc=pondModule.withPondSprites(this.plugin,fs.readFileSync(path.join(this.app.vault.adapter.getBasePath(),WALLPAPER),'utf8'));
     el(host,'div','lake-shade'); this.panel=el(host,'section','lake-panel');this.panel.id=`lake-panel-${this.leaf.id||Date.now()}`;this.panel.setAttribute('aria-live','polite');host.classList.toggle('lake-focus-mode',!!this.plugin.settings.uiPrefs?.focusMode);
     const nav=el(host,'nav','lake-topnav'); nav.setAttribute('aria-label','湖面工作台导航');
     [['home','湖心','首页与动态湖面'],['schedule','朝夕','日常安排与个人备忘'],['skills','百艺','技能库'],['wiki','知屿','Wiki 知识库'],['travel','拾光','旅行笔记'],['lingxi','灵犀','电影、剧集与书影音收藏'],['tasks','任务','项目任务与 Agent 执行看板']].forEach(([id,label,description])=>{const b=button(nav,label,()=>this.openSection(this.active===id&&this.panel.classList.contains('is-open')?'home':id),'lake-nav-btn');b.dataset.section=id;b.title=description;b.setAttribute('aria-label',`${label}：${description}`);b.setAttribute('aria-controls',this.panel.id);b.setAttribute('aria-current',id==='home'?'page':'false');});
     this.statusEl=el(host,'div','lake-status');this.statusEl.setAttribute('role','status');this.statusEl.setAttribute('aria-live','polite');this.statusEl.setAttribute('aria-atomic','true');this.setupDraggableModals(host);
-    const pondPath=path.join(this.app.vault.adapter.basePath,this.plugin.manifest.dir,'pond.js');const pondCache=require('module')._cache;delete pondCache[pondPath];require(pondPath).attach(this,Modal,require('obsidian'));
+    pondModule.attach(this,Modal,require('obsidian'));
     const glassPath=path.join(this.app.vault.adapter.basePath,this.plugin.manifest.dir,'glass-controls.js');delete require('module')._cache[glassPath];require(glassPath).attach(this,require('obsidian'));
     const musicPath=path.join(this.app.vault.adapter.basePath,this.plugin.manifest.dir,'music.js');delete require('module')._cache[musicPath];require(musicPath).attach(this,require('obsidian'));
     const assistantPath=path.join(this.app.vault.adapter.basePath,this.plugin.manifest.dir,'assistant-ui.js');delete require('module')._cache[assistantPath];require(assistantPath).attach(this,require('obsidian'));this.attachWechatEntry(host);this.setupFloatingToggles(host);
